@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -49,6 +50,9 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    val nav_version = "2.9.7"
+    implementation("androidx.navigation:navigation-fragment:${nav_version}")
+    implementation("androidx.navigation:navigation-ui:${nav_version}")
 
     implementation("androidx.constraintlayout:constraintlayout:2.2.1")
     implementation("com.google.android.material:material:1.12.0")
