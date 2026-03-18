@@ -28,10 +28,10 @@ fun PostEntity.toModel(): Post = Post(
 // Notification
 fun Notification.toEntity(): NotificationEntity = NotificationEntity(
     notificationId, toUid, fromUid, fromUsername,
-    fromProfileImageUrl, type.name, postId, isRead, createdAt
+    fromProfileImageUrl, type.name, postId, read, createdAt
 )
 
 fun NotificationEntity.toModel(): Notification = Notification(
     notificationId, toUid, fromUid, fromUsername,
-    fromProfileImageUrl, NotificationType.valueOf(type), postId, isRead, createdAt
+    fromProfileImageUrl, NotificationType.valueOf(type), postId, read, createdAt
 )

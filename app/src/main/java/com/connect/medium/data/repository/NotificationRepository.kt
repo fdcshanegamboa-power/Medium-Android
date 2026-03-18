@@ -1,5 +1,6 @@
 package com.connect.medium.data.repository
 
+import android.util.Log
 import com.connect.medium.data.local.dao.NotificationDao
 import com.connect.medium.data.model.Notification
 import com.connect.medium.data.remote.FirestoreDataSource
@@ -18,7 +19,11 @@ class NotificationRepository(
     fun observeNotifications(uid: String): Flow<List<Notification>> {
         return firestoreDataSource.observeNotifications(uid)
             .onEach { notifications ->
-                notificationDao.insertNotifications(notifications.map { it.toEntity() })
+                Log.d("NotifDebug", "From Firestore: ${notifications.map { "${it.notificationId} read=${it.read}" }}")
+                notificationDao.upsertNotifications(notifications.map { it.toEntity() })
+                val roomCount = notificationDao.getUnreadCount(uid)
+                Log.d("NotifDebug", "Room unread count after upsert: $roomCount")
+
             }
     }
 
@@ -41,6 +46,7 @@ class NotificationRepository(
 
     suspend fun markAllAsRead(uid: String): Resource<Unit> {
         return try {
+            firestoreDataSource.markAllNotificationsAsRead(uid)
             notificationDao.markAllAsRead(uid)
             Resource.Success(Unit)
         } catch (e: Exception) {

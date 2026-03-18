@@ -38,6 +38,17 @@ class FirestoreDataSource {
             .await()
     }
 
+    suspend fun searchUsers(query: String): List<User> {
+        val snapshot = firestore.collection(Constants.COLLECTION_USERS)
+            .orderBy("username")
+            .startAt(query)
+            .endAt(query + "\uf8ff")
+            .limit(20)
+            .get()
+            .await()
+        return snapshot.toObjects(User::class.java)
+    }
+
     fun observeUser(uid: String): Flow<User?> = callbackFlow {
         val listener = firestore.collection(Constants.COLLECTION_USERS)
             .document(uid)
@@ -236,6 +247,22 @@ class FirestoreDataSource {
         )
 
         batch.commit().await()
+    }
+
+    suspend fun markAllNotificationsAsRead(uid: String) {
+        val snapshot = firestore.collection(Constants.COLLECTION_NOTIFICATIONS)
+            .whereEqualTo("toUid", uid)
+            .whereEqualTo("read", false)
+            .get()
+            .await()
+
+        val batch = firestore.batch()
+        snapshot.documents.forEach { doc ->
+            batch.update(doc.reference, "read", true)
+        }
+        if (snapshot.documents.isNotEmpty()) {
+            batch.commit().await()
+        }
     }
 
     suspend fun isFollowingUser(currentUid: String, targetUid: String): Boolean {

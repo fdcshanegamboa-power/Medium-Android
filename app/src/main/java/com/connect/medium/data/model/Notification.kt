@@ -1,5 +1,7 @@
 package com.connect.medium.data.model
 
+import com.google.firebase.firestore.PropertyName
+
 data class Notification(
     val notificationId: String = "",
     val toUid: String = "",
@@ -8,7 +10,7 @@ data class Notification(
     val fromProfileImageUrl: String = "",
     val type: NotificationType = NotificationType.LIKE,
     val postId: String = "",
-    val isRead: Boolean = false,
+    var read: Boolean = false,
     val createdAt: Long = System.currentTimeMillis()
 )
 

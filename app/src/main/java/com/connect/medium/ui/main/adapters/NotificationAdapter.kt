@@ -44,7 +44,7 @@ class NotificationAdapter(
 
             // unread indicator
             binding.viewUnread.visibility =
-                if (!notification.isRead) View.VISIBLE else View.INVISIBLE
+                if (!notification.read) View.VISIBLE else View.INVISIBLE
 
             // notification message based on type
             binding.tvMessage.text = when (notification.type) {

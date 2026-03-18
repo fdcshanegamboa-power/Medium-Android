@@ -14,7 +14,7 @@ import com.connect.medium.data.local.entity.*
         NotificationEntity::class,
         FollowEntity::class
     ],
-    version = 2,
+    version = 6,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

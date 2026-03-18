@@ -31,6 +31,15 @@ class UserRepository(
         }
     }
 
+    suspend fun searchUsers(query: String): Resource<List<User>> {
+        return try {
+            val users = firestoreDataSource.searchUsers(query)
+            Resource.Success(users)
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Search failed")
+        }
+    }
+
     fun observeUser(uid: String): Flow<User?> {
         return firestoreDataSource.observeUser(uid)
             .onEach { user ->

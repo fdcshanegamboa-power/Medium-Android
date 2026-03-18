@@ -13,6 +13,6 @@ data class NotificationEntity(
     val fromProfileImageUrl: String,
     val type: String,
     val postId: String,
-    val isRead: Boolean,
+    val read: Boolean,
     val createdAt: Long
 )

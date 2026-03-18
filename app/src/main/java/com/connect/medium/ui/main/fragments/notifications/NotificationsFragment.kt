@@ -9,10 +9,12 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.connect.medium.R
 import com.connect.medium.data.model.NotificationType
 import com.connect.medium.databinding.FragmentNotificationsBinding
 import com.connect.medium.ui.main.adapters.NotificationAdapter
 import com.connect.medium.utils.Resource
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class NotificationsFragment : Fragment() {
 
@@ -39,6 +41,10 @@ class NotificationsFragment : Fragment() {
         observeViewModel()
         setupClickListeners()
 
+        val badge = requireActivity().findViewById<BottomNavigationView>(R.id.bottom_nav)
+            .getBadge(R.id.notificationsFragment)
+        badge?.isVisible = false
+
         viewModel.markAllAsRead()
     }
 
@@ -55,7 +61,6 @@ class NotificationsFragment : Fragment() {
                 }
             }
         }
-
         binding.rvNotifications.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = notificationAdapter
