@@ -5,8 +5,16 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.GridLayoutManager
+import com.bumptech.glide.Glide
 import com.connect.medium.R
+import com.connect.medium.data.model.User
 import com.connect.medium.databinding.FragmentProfileBinding
+import com.connect.medium.ui.main.adapters.PostGridAdapter
+import com.connect.medium.utils.Resource
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -22,6 +30,13 @@ class ProfileFragment : Fragment() {
 
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
+    private val viewModel: ProfileViewModel by viewModels{
+        ProfileViewModelFactory(requireActivity().application)
+    }
+
+    private val args: ProfileFragmentArgs by navArgs()
+    private lateinit var targetUid: String
+    private lateinit var postGridAdapter: PostGridAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -33,6 +48,87 @@ class ProfileFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        targetUid = if(args.uid.isNullOrEmpty()) viewModel.currentUid else args.uid!!
+
+        setupRecyclerView()
+        setupClickListeners()
+        observeViewModel()
+
+        viewModel.loadUser(targetUid)
+        viewModel.loadUserPosts(targetUid)
+
+        if (targetUid != viewModel.currentUid) {
+            viewModel.observeIsFollowing(targetUid)
+        }
+
+
+    }
+
+    private fun setupRecyclerView() {
+        postGridAdapter = PostGridAdapter { post ->
+            // TODO: navigate to post details
+        }
+        binding.rvPosts.apply {
+            layoutManager = GridLayoutManager(requireContext(), 3)
+            adapter = postGridAdapter
+        }
+    }
+    private fun setupClickListeners() {
+        binding.btnFollow.setOnClickListener {
+            if (viewModel.isFollowing.value == true) {
+                viewModel.unfollowUser(targetUid)
+            } else {
+                viewModel.followUser(targetUid)
+            }
+        }
+
+        binding.btnEditProfile.setOnClickListener {
+            // TODO: navigate to edit profile
+        }
+    }
+
+    private fun observeViewModel() {
+        viewModel.userState.observe(viewLifecycleOwner) { resource ->
+            when (resource) {
+                is Resource.Loading -> {}
+                is Resource.Success -> bindUser(resource.data)
+                is Resource.Error -> Toast.makeText(
+                    requireContext(), resource.message, Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+
+        viewModel.postsState.observe(viewLifecycleOwner) { resource ->
+            if (resource is Resource.Success) {
+                postGridAdapter.submitList(resource.data)
+                binding.tvPostCount.text = resource.data.size.toString()
+            }
+        }
+
+        viewModel.isFollowing.observe(viewLifecycleOwner) { isFollowing ->
+            binding.btnFollow.text = if (isFollowing) "Unfollow" else "Follow"
+        }
+    }
+
+    private fun bindUser(user: User) {
+        binding.tvDisplayName.text = user.displayName
+        binding.tvBio.text = user.bio
+        binding.tvFollowerCount.text = user.followerCount.toString()
+        binding.tvFollowingCount.text = user.followingCount.toString()
+
+        Glide.with(this)
+            .load(user.profileImageUrl)
+            .placeholder(R.drawable.ic_profile)
+            .into(binding.ivProfileImage)
+
+        if (targetUid == viewModel.currentUid) {
+            binding.btnEditProfile.visibility = View.VISIBLE
+            binding.btnFollow.visibility = View.GONE
+        } else {
+            binding.btnFollow.visibility = View.VISIBLE
+            binding.btnEditProfile.visibility = View.GONE
+        }
     }
 
     override fun onDestroyView() {

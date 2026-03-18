@@ -54,10 +54,15 @@ class FirestoreDataSource {
     // ─── Posts ──────────────────────────────────────────
 
     suspend fun createPost(post: Post) {
-        firestore.collection(Constants.COLLECTION_POSTS)
+        val batch = firestore.batch()
+        val postRef = firestore.collection(Constants.COLLECTION_POSTS)
             .document(post.postId)
-            .set(post)
-            .await()
+        batch.set(postRef, post)
+
+        val userRef = firestore.collection(Constants.COLLECTION_USERS)
+            .document(post.authorUid)
+        batch.update(userRef, "postCount", FieldValue.increment(1))
+        batch.commit().await()
     }
 
     suspend fun deletePost(postId: String) {

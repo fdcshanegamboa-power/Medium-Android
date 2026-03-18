@@ -5,15 +5,16 @@ import android.net.Uri
 import com.cloudinary.android.MediaManager
 import com.cloudinary.android.callback.ErrorInfo
 import com.cloudinary.android.callback.UploadCallback
+import com.connect.medium.BuildConfig
 
 
 class CloudinaryDataSource(context: Context) {
 
     init {
         MediaManager.init(context, mapOf(
-            "cloud_name" to "YOUR_CLOUD_NAME",
-            "api_key" to "YOUR_API_KEY",
-            "api_secret" to "YOUR_API_SECRET"
+            "cloud_name" to BuildConfig.CLOUDINARY_CLOUD_NAME,
+            "api_key" to BuildConfig.CLOUDINARY_API_KEY,
+            "api_secret" to BuildConfig.CLOUDINARY_API_SECRET
         ))
     }
 

@@ -1,0 +1,136 @@
+package com.connect.medium.ui.main.fragments.comments
+
+import android.os.Bundle
+import androidx.fragment.app.Fragment
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Toast
+import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.connect.medium.R
+import com.connect.medium.databinding.FragmentCommentsBottomSheetBinding
+import com.connect.medium.ui.main.adapters.CommentAdapter
+import com.connect.medium.utils.Resource
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+
+// TODO: Rename parameter arguments, choose names that match
+// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+private const val ARG_PARAM1 = "param1"
+private const val ARG_PARAM2 = "param2"
+
+/**
+ * A simple [Fragment] subclass.
+ * Use the [CommentsBottomSheet.newInstance] factory method to
+ * create an instance of this fragment.
+ */
+class CommentsBottomSheet : BottomSheetDialogFragment() {
+
+    private var _binding: FragmentCommentsBottomSheetBinding? = null
+    private val binding get() = _binding!!
+
+    private val viewModel: CommentsViewModel by viewModels {
+        CommentsViewModelFactory(requireActivity().application)
+    }
+
+    private lateinit var commentAdapter: CommentAdapter
+    private lateinit var postId: String
+
+    companion object {
+        const val TAG = "CommentsBottomSheet"
+        private const val ARG_POST_ID = "post_id"
+
+        fun newInstance(postId: String): CommentsBottomSheet {
+            return CommentsBottomSheet().apply {
+                arguments = Bundle().apply {
+                    putString(ARG_POST_ID, postId)
+                }
+            }
+        }
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentCommentsBottomSheetBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        postId = arguments?.getString(ARG_POST_ID) ?: return
+
+        setupRecyclerView()
+        setupClickListeners()
+        observeViewModel()
+
+        viewModel.loadComments(postId)
+    }
+
+    // make bottom sheet taller — 90% of screen height
+    override fun onStart() {
+        super.onStart()
+        dialog?.let {
+            val bottomSheet = it.findViewById<View>(
+                com.google.android.material.R.id.design_bottom_sheet
+            )
+            bottomSheet?.let { sheet ->
+                val behavior = BottomSheetBehavior.from(sheet)
+                val screenHeight = resources.displayMetrics.heightPixels
+                sheet.layoutParams.height = (screenHeight * 0.9).toInt()
+                behavior.state = BottomSheetBehavior.STATE_EXPANDED
+            }
+        }
+    }
+
+    private fun setupRecyclerView() {
+        commentAdapter = CommentAdapter()
+        binding.rvComments.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = commentAdapter
+        }
+    }
+
+    private fun setupClickListeners() {
+        binding.btnSend.setOnClickListener {
+            val text = binding.etComment.text.toString().trim()
+            if (text.isNotEmpty()) {
+                viewModel.addComment(postId, text)
+            }
+        }
+    }
+
+    private fun observeViewModel() {
+        viewModel.commentsState.observe(viewLifecycleOwner) { resource ->
+            if (resource is Resource.Success) {
+                commentAdapter.submitList(resource.data)
+                // scroll to bottom when new comment added
+                if (resource.data.isNotEmpty()) {
+                    binding.rvComments.scrollToPosition(resource.data.size - 1)
+                }
+            }
+        }
+
+        viewModel.addCommentState.observe(viewLifecycleOwner) { resource ->
+            when (resource) {
+                is Resource.Loading -> binding.btnSend.isEnabled = false
+                is Resource.Success -> {
+                    binding.btnSend.isEnabled = true
+                    binding.etComment.text?.clear()
+                }
+                is Resource.Error -> {
+                    binding.btnSend.isEnabled = true
+                    Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}
