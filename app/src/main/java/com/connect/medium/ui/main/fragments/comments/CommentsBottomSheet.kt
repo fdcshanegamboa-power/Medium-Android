@@ -36,15 +36,18 @@ class CommentsBottomSheet : BottomSheetDialogFragment() {
 
     private lateinit var commentAdapter: CommentAdapter
     private lateinit var postId: String
+    private lateinit var postAuthorUid: String
 
     companion object {
         const val TAG = "CommentsBottomSheet"
         private const val ARG_POST_ID = "post_id"
+        private const val ARG_POST_AUTHOR_UID = "post_author_uid"
 
-        fun newInstance(postId: String): CommentsBottomSheet {
+        fun newInstance(postId: String, postAuthorUid: String): CommentsBottomSheet {
             return CommentsBottomSheet().apply {
                 arguments = Bundle().apply {
                     putString(ARG_POST_ID, postId)
+                    putString(ARG_POST_AUTHOR_UID, postAuthorUid)
                 }
             }
         }
@@ -62,6 +65,7 @@ class CommentsBottomSheet : BottomSheetDialogFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         postId = arguments?.getString(ARG_POST_ID) ?: return
+        postAuthorUid = arguments?.getString(ARG_POST_AUTHOR_UID) ?: return
 
         setupRecyclerView()
         setupClickListeners()
@@ -98,7 +102,7 @@ class CommentsBottomSheet : BottomSheetDialogFragment() {
         binding.btnSend.setOnClickListener {
             val text = binding.etComment.text.toString().trim()
             if (text.isNotEmpty()) {
-                viewModel.addComment(postId, text)
+                viewModel.addComment(postId, postAuthorUid, text)
             }
         }
     }

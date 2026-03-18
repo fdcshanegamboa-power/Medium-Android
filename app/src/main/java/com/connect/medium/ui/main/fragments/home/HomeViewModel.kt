@@ -7,9 +7,11 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.connect.medium.data.local.AppDatabase
 import com.connect.medium.data.model.Post
+import com.connect.medium.data.model.User
 import com.connect.medium.data.remote.FirestoreDataSource
 import com.connect.medium.data.repository.AuthRepository
 import com.connect.medium.data.repository.PostRepository
+import com.connect.medium.data.repository.UserRepository
 import com.connect.medium.utils.Resource
 import kotlinx.coroutines.launch
 
@@ -19,6 +21,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val firestoreDataSource = FirestoreDataSource()
     private val postRepository = PostRepository(firestoreDataSource, db.postDao())
     private val authRepository = AuthRepository()
+    private val userRepository = UserRepository(firestoreDataSource, db.userDao(), db.followDao())
+    private val _currentUser = MutableLiveData<User?>()
 
     val currentUid = authRepository.getCurrentUser()?.uid ?: ""
 
@@ -36,6 +40,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         loadFeed()
+        loadCurrentUser()
     }
 
     fun loadFeed() {
@@ -47,24 +52,33 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 }
         }
     }
+    private fun loadCurrentUser() {
+        viewModelScope.launch {
+            userRepository.observeUser(currentUid)
+                .collect { _currentUser.value = it }
+        }
+    }
 
     fun toggleLike(post: Post) {
         viewModelScope.launch {
             val isLiked = localLikedPosts.contains(post.postId)
 
             // optimistic update
-            if (isLiked) {
-                localLikedPosts.remove(post.postId)
-            } else {
-                localLikedPosts.add(post.postId)
-            }
+            if (isLiked) localLikedPosts.remove(post.postId)
+            else localLikedPosts.add(post.postId)
             _likedPostIds.value = localLikedPosts.toSet()
 
-            // sync to Firestore
+            // need current user for notification
+            val currentUser = _currentUser.value
+
             val result = if (isLiked) {
                 postRepository.unlikePost(post.postId, currentUid)
             } else {
-                postRepository.likePost(post.postId, currentUid)
+                if (currentUser != null) {
+                    postRepository.likePost(post.postId, currentUid, post.authorUid, currentUser)
+                } else {
+                    Resource.Error("User not found")
+                }
             }
 
             // rollback if failed

@@ -1,6 +1,7 @@
 package com.connect.medium.ui.main.adapters
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -12,7 +13,7 @@ class PostAdapter(
     private val onLikeClick: (Post) -> Unit,
     private val onCommentClick: (Post) -> Unit,
     private val onProfileClick: (String) -> Unit
-) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private var posts = listOf<Post>()
     private var likedPosts = mutableSetOf<String>()
@@ -33,18 +34,39 @@ class PostAdapter(
         if (index != -1) notifyItemChanged(index)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
-        val binding = ItemPostBinding.inflate(
-            LayoutInflater.from(parent.context), parent, false
-        )
-        return PostViewHolder(binding)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return if (viewType == VIEW_TYPE_HEADER) {
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_feed_header, parent, false)
+            HeaderViewHolder(view)
+        } else {
+            val binding = ItemPostBinding.inflate(
+                LayoutInflater.from(parent.context), parent, false
+            )
+            PostViewHolder(binding)
+        }
     }
 
-    override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
-        holder.bind(posts[position])
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        when (holder) {
+            is PostViewHolder -> {
+                val post = posts[position - 1] // offset for header
+                holder.bind(post)
+            }
+            is HeaderViewHolder -> {
+                // nothing yet (you can bind header data later)
+            }
+        }
     }
 
-    override fun getItemCount() = posts.size
+    override fun getItemViewType(position: Int): Int {
+        return if (position == 0) VIEW_TYPE_HEADER else VIEW_TYPE_POST
+    }
+
+    override fun getItemCount(): Int {
+        return posts.size + 1
+    }
+
 
     inner class PostViewHolder(
         private val binding: ItemPostBinding
@@ -96,4 +118,12 @@ class PostAdapter(
             }
         }
     }
+
+
+    companion object {
+
+        private const val VIEW_TYPE_HEADER = 0
+        private const val VIEW_TYPE_POST = 1
+    }
 }
+class HeaderViewHolder(view: View) : RecyclerView.ViewHolder(view)

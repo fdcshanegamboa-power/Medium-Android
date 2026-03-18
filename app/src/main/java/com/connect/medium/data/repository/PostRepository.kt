@@ -2,7 +2,10 @@ package com.connect.medium.data.repository
 
 import com.connect.medium.data.local.dao.PostDao
 import com.connect.medium.data.model.Comment
+import com.connect.medium.data.model.Notification
+import com.connect.medium.data.model.NotificationType
 import com.connect.medium.data.model.Post
+import com.connect.medium.data.model.User
 import com.connect.medium.data.remote.FirestoreDataSource
 import com.connect.medium.utils.Resource
 import com.connect.medium.utils.toEntity
@@ -10,6 +13,7 @@ import com.connect.medium.utils.toModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import java.util.UUID
 
 class PostRepository(
     private val firestoreDataSource: FirestoreDataSource,
@@ -52,9 +56,25 @@ class PostRepository(
         }
     }
 
-    suspend fun likePost(postId: String, uid: String): Resource<Unit> {
+    suspend fun likePost(postId: String, uid: String, postAuthorUid: String, fromUser: User): Resource<Unit> {
         return try {
             firestoreDataSource.likePost(postId, uid)
+
+            // send notification only if liking someone else's post
+            if (uid != postAuthorUid) {
+                val notification = Notification(
+                    notificationId = UUID.randomUUID().toString(),
+                    toUid = postAuthorUid,
+                    fromUid = uid,
+                    fromUsername = fromUser.username,
+                    fromProfileImageUrl = fromUser.profileImageUrl,
+                    type = NotificationType.LIKE,
+                    postId = postId,
+                    createdAt = System.currentTimeMillis()
+                )
+                firestoreDataSource.sendNotification(notification)
+            }
+
             Resource.Success(Unit)
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Failed to like post")
@@ -74,9 +94,25 @@ class PostRepository(
         return firestoreDataSource.isPostLikedByUser(postId, uid)
     }
 
-    suspend fun addComment(comment: Comment): Resource<Unit> {
+    suspend fun addComment(comment: Comment, postAuthorUid: String, fromUser: User): Resource<Unit> {
         return try {
             firestoreDataSource.addComment(comment)
+
+            // send notification only if commenting on someone else's post
+            if (comment.authorUid != postAuthorUid) {
+                val notification = Notification(
+                    notificationId = UUID.randomUUID().toString(),
+                    toUid = postAuthorUid,
+                    fromUid = comment.authorUid,
+                    fromUsername = fromUser.username,
+                    fromProfileImageUrl = fromUser.profileImageUrl,
+                    type = NotificationType.COMMENT,
+                    postId = comment.postId,
+                    createdAt = System.currentTimeMillis()
+                )
+                firestoreDataSource.sendNotification(notification)
+            }
+
             Resource.Success(Unit)
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Failed to add comment")

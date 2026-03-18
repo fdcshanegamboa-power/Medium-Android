@@ -57,7 +57,7 @@ class HomeFragment : Fragment() {
                 viewModel.toggleLike(post)
             },
             onCommentClick = { post ->
-                CommentsBottomSheet.newInstance(post.postId)
+                CommentsBottomSheet.newInstance(post.postId, post.authorUid)
                     .show(parentFragmentManager, CommentsBottomSheet.TAG)
             },
             onProfileClick = { uid ->

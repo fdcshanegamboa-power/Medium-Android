@@ -3,6 +3,8 @@ package com.connect.medium.data.repository
 import com.connect.medium.data.local.dao.FollowDao
 import com.connect.medium.data.local.dao.UserDao
 import com.connect.medium.data.local.entity.FollowEntity
+import com.connect.medium.data.model.Notification
+import com.connect.medium.data.model.NotificationType
 import com.connect.medium.data.model.User
 import com.connect.medium.data.remote.FirestoreDataSource
 import com.connect.medium.utils.Resource
@@ -11,6 +13,7 @@ import com.connect.medium.utils.toModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import java.util.UUID
 
 class UserRepository(
     private val firestoreDataSource: FirestoreDataSource,
@@ -49,10 +52,24 @@ class UserRepository(
         }
     }
 
-    suspend fun followUser(currentUid: String, targetUid: String): Resource<Unit> {
+    suspend fun followUser(currentUid: String, targetUid: String, fromUser: User): Resource<Unit> {
         return try {
             followDao.insertFollow(FollowEntity(targetUid, currentUid))
             firestoreDataSource.followUser(currentUid, targetUid)
+
+            // send follow notification
+            val notification = Notification(
+                notificationId = UUID.randomUUID().toString(),
+                toUid = targetUid,
+                fromUid = currentUid,
+                fromUsername = fromUser.username,
+                fromProfileImageUrl = fromUser.profileImageUrl,
+                type = NotificationType.FOLLOW,
+                postId = "",
+                createdAt = System.currentTimeMillis()
+            )
+            firestoreDataSource.sendNotification(notification)
+
             Resource.Success(Unit)
         } catch (e: Exception) {
             followDao.deleteFollow(currentUid, targetUid)

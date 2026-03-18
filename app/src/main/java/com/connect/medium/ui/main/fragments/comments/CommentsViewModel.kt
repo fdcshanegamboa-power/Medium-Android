@@ -53,8 +53,7 @@ class CommentsViewModel(application: Application) : AndroidViewModel(application
                 }
         }
     }
-
-    fun addComment(postId: String, text: String) {
+    fun addComment(postId: String, postAuthorUid: String, text: String) {
         if (text.isBlank()) return
         _addCommentState.value = Resource.Loading
 
@@ -75,7 +74,7 @@ class CommentsViewModel(application: Application) : AndroidViewModel(application
                 createdAt = System.currentTimeMillis()
             )
 
-            _addCommentState.value = postRepository.addComment(comment)
+            _addCommentState.value = postRepository.addComment(comment, postAuthorUid, user)
         }
     }
 }

@@ -13,6 +13,7 @@ import com.connect.medium.data.repository.AuthRepository
 import com.connect.medium.data.repository.PostRepository
 import com.connect.medium.data.repository.UserRepository
 import com.connect.medium.utils.Resource
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class ProfileViewModel(application: Application) : AndroidViewModel(application) {
@@ -73,8 +74,13 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
 
     fun followUser(targetUid: String) {
         viewModelScope.launch {
-            _followState.value = userRepository.followUser(currentUid, targetUid)
-        }
+            val user = _userState.value
+            if (user is Resource.Success) {
+                val currentUser = userRepository.getCachedUser(currentUid).first()
+                if (currentUser != null) {
+                    _followState.value = userRepository.followUser(currentUid, targetUid, currentUser)
+                }
+            }        }
     }
 
     fun unfollowUser(targetUid: String) {

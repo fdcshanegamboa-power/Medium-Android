@@ -1,5 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <!-- Base -->
+    <color name="background">#FAFAFA</color>
+    <color name="foreground">#1C1C1C</color>
+
+    <!-- Primary (buttons / actions) -->
+    <color name="primary">#0095F6</color>
+    <color name="primary_foreground">#FFFFFF</color>
+
+    <!-- Secondary (subtle buttons) -->
+    <color name="secondary">#EFEFEF</color>
+    <color name="secondary_foreground">#262626</color>
+
+    <!-- Muted text -->
+    <color name="muted">#F2F2F2</color>
+    <color name="muted_foreground">#8E8E8E</color>
+
+    <!-- Borders / inputs -->
+    <color name="border">#DBDBDB</color>
+    <color name="input">#FAFAFA</color>
+
+    <!-- States -->
+    <color name="error">#ED4956</color>
+    <color name="success">#4CAF50</color>
+
+    <!-- Legacy (optional keep/remove) -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="gray">#808080</color>
