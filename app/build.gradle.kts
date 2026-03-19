@@ -126,4 +126,16 @@ dependencies {
     //For RefreshLayout
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.2.0")
 
+    //Gson Converter for Cloudinary API
+    implementation("com.google.code.gson:gson:2.13.2")
+
+    //video player exoplayer
+    val media3_version = "1.9.2"
+    implementation("androidx.media3:media3-exoplayer:$media3_version")
+    implementation("androidx.media3:media3-ui:${media3_version}")
+
+    //dots indicator for pager multiple medias
+    implementation("com.tbuonomo:dotsindicator:5.1.0")
+
+
 }

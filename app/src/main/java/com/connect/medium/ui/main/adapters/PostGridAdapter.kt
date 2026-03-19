@@ -1,9 +1,11 @@
 package com.connect.medium.ui.main.adapters
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.connect.medium.R
 import com.connect.medium.data.model.Post
 import com.connect.medium.databinding.ItemPostGridBinding
 
@@ -36,10 +38,31 @@ class PostGridAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(post: Post) {
-            Glide.with(binding.root)
-                .load(post.imageUrl)
-                .centerCrop()
-                .into(binding.ivPostImage)
+            val firstMedia = post.mediaUrls.firstOrNull()
+            val firstType = post.mediaTypes.firstOrNull()
+
+            if (firstType == "video") {
+                // for video show thumbnail using Glide
+                Glide.with(binding.root)
+                    .load(firstMedia)
+                    .centerCrop()
+                    .placeholder(R.drawable.ic_play)
+                    .into(binding.ivPostImage)
+
+                // show video indicator
+                binding.ivVideoIndicator.visibility = View.VISIBLE
+            } else {
+                Glide.with(binding.root)
+                    .load(firstMedia)
+                    .centerCrop()
+                    .into(binding.ivPostImage)
+
+                binding.ivVideoIndicator.visibility = View.GONE
+            }
+
+            // show multiple media indicator
+            binding.ivMultipleIndicator.visibility =
+                if (post.mediaUrls.size > 1) View.VISIBLE else View.GONE
 
             binding.root.setOnClickListener { onPostClick(post) }
         }

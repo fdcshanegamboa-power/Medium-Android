@@ -9,9 +9,12 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.connect.medium.R
 import com.connect.medium.databinding.FragmentCreatePostBinding
+import com.connect.medium.ui.main.adapters.MediaPreviewAdapter
 import com.connect.medium.utils.Resource
+import kotlinx.coroutines.FlowPreview
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -30,15 +33,32 @@ class CreatePostFragment : Fragment() {
     private val viewModel: CreatePostViewModel by viewModels {
         CreatePostViewModelFactory(requireActivity().application)
     }
-    private var selectedImageUri: Uri? = null
+    private val selectedMedia = mutableListOf<Pair<Uri, String>>()
+    private lateinit var mediaPreviewAdapter: MediaPreviewAdapter
 
-    private var pickImageLauncher = registerForActivityResult(
-        ActivityResultContracts.GetContent()
-    ){ uri ->
-        uri?.let {
-            selectedImageUri = it
-            binding.ivPostImage.setImageURI(it)
+    private val pickMediaLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenMultipleDocuments()
+    ) { uris ->
+        uris.forEach { uri ->
+            val type = requireContext().contentResolver.getType(uri) ?: ""
+            val mediaType = if (type.startsWith("video")) "video" else "image"
+
+            if (mediaType == "video") {
+                val fileSize = requireContext().contentResolver
+                    .openFileDescriptor(uri, "r")?.statSize ?: 0
+                if (fileSize > 50 * 1024 * 1024L) {
+                    Toast.makeText(
+                        requireContext(),
+                        "Video exceeds 50MB limit: ${fileSize / (1024 * 1024)}MB",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    return@forEach
+                }
+            }
+            selectedMedia.add(Pair(uri, mediaType))
         }
+        mediaPreviewAdapter.submitList(selectedMedia.toList())
+        updateMediaCount()
     }
 
     override fun onCreateView(
@@ -51,51 +71,76 @@ class CreatePostFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setupMediaPreview()
         setupClickListeners()
         observeViewModel()
     }
 
-    private fun setupClickListeners(){
-        binding.btnPickImage.setOnClickListener {
-            pickImageLauncher.launch("image/*")
+    private fun setupMediaPreview() {
+        mediaPreviewAdapter = MediaPreviewAdapter { position ->
+            // remove item on X click
+            selectedMedia.removeAt(position)
+            mediaPreviewAdapter.submitList(selectedMedia.toList())
+            updateMediaCount()
+        }
+
+        binding.rvMediaPreview.apply {
+            layoutManager = LinearLayoutManager(
+                requireContext(), LinearLayoutManager.HORIZONTAL, false
+            )
+            adapter = mediaPreviewAdapter
+        }
+    }
+
+    private fun setupClickListeners() {
+        binding.btnPickMedia.setOnClickListener {
+            pickMediaLauncher.launch(arrayOf("image/*", "video/*"))
         }
 
         binding.btnPost.setOnClickListener {
             val caption = binding.etCaption.text.toString().trim()
-            val imageUri = selectedImageUri
-
-            if (imageUri == null) {
-                Toast.makeText(requireContext(), "Please select an image", Toast.LENGTH_SHORT).show()
+            if (selectedMedia.isEmpty()) {
+                Toast.makeText(requireContext(), "Please select media", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-
-            viewModel.createPost(imageUri, caption)
+            viewModel.createPost(selectedMedia.toList(), caption)
         }
     }
 
-    private fun observeViewModel(){
-        viewModel.uploadProgress.observe(viewLifecycleOwner){ progress ->
+    private fun updateMediaCount() {
+        binding.tvMediaCount.text = "${selectedMedia.size} item(s) selected"
+        binding.tvMediaCount.visibility =
+            if (selectedMedia.isEmpty()) View.GONE else View.VISIBLE
+    }
+
+    private fun observeViewModel() {
+        viewModel.uploadProgress.observe(viewLifecycleOwner) { progress ->
             binding.progressUpload.visibility = View.VISIBLE
-            binding.tvProgress.visibility = View.VISIBLE
             binding.progressUpload.progress = progress
-            binding.tvProgress.text = "Uploading... $progress%"
         }
-        viewModel.createPostState.observe(viewLifecycleOwner){ resource->
+
+        viewModel.uploadStatus.observe(viewLifecycleOwner) { status ->
+            binding.tvProgress.visibility = View.VISIBLE
+            binding.tvProgress.text = status
+        }
+
+        viewModel.createPostState.observe(viewLifecycleOwner) { resource ->
             when (resource) {
                 is Resource.Loading -> {
                     binding.btnPost.isEnabled = false
-                    binding.btnPickImage.isEnabled = false
+                    binding.btnPickMedia.isEnabled = false
                 }
                 is Resource.Success -> {
                     binding.btnPost.isEnabled = true
-                    binding.btnPickImage.isEnabled = true
+                    binding.btnPickMedia.isEnabled = true
                     binding.progressUpload.visibility = View.GONE
                     binding.tvProgress.visibility = View.GONE
+                    Toast.makeText(requireContext(), "Post shared!", Toast.LENGTH_SHORT).show()
                     clearForm()
                 }
                 is Resource.Error -> {
                     binding.btnPost.isEnabled = true
-                    binding.btnPickImage.isEnabled = true
+                    binding.btnPickMedia.isEnabled = true
                     binding.progressUpload.visibility = View.GONE
                     binding.tvProgress.visibility = View.GONE
                     Toast.makeText(requireContext(), resource.message, Toast.LENGTH_LONG).show()
@@ -103,10 +148,12 @@ class CreatePostFragment : Fragment() {
             }
         }
     }
+
     private fun clearForm() {
-        selectedImageUri = null
-        binding.ivPostImage.setImageDrawable(null)
+        selectedMedia.clear()
+        mediaPreviewAdapter.submitList(emptyList())
         binding.etCaption.text?.clear()
+        binding.tvMediaCount.visibility = View.GONE
     }
 
     override fun onDestroyView() {

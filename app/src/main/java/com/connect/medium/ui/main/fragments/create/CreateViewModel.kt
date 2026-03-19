@@ -15,6 +15,7 @@ import com.connect.medium.data.repository.AuthRepository
 import com.connect.medium.data.repository.PostRepository
 import com.connect.medium.data.repository.UserRepository
 import com.connect.medium.utils.Resource
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -38,6 +39,9 @@ class CreatePostViewModel(application: Application) : AndroidViewModel(applicati
     private val _currentUser = MutableLiveData<User?>()
     val currentUser: LiveData<User?> = _currentUser
 
+    private val _uploadStatus = MutableLiveData<String>()
+    val uploadStatus: LiveData<String> = _uploadStatus
+
     init {
         loadCurrentUser()
     }
@@ -51,39 +55,72 @@ class CreatePostViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
-    fun createPost(imageUri: Uri, caption: String) {
+    fun createPost(mediaItems: List<Pair<Uri, String>>, caption: String) {
+
+        if (mediaItems.isEmpty()) {
+            _createPostState.value = Resource.Error("Please select an image")
+            return
+        }
         _createPostState.value = Resource.Loading
 
-        cloudinaryDataSource.uploadImage(
-            uri = imageUri,
-            folder = "posts",
-            onSuccess = { imageUrl ->
-                viewModelScope.launch {
-                    val user = _currentUser.value
-                    if (user == null) {
-                        _createPostState.value = Resource.Error("User not found")
-                        return@launch
+        viewModelScope.launch {
+            val uploadedUrls = mutableListOf<String>()
+            val uploadedTypes = mutableListOf<String>()
+
+            for ((index, item) in mediaItems.withIndex()) {
+                val (uri, type) = item
+                _uploadStatus.value = "Uploading ${index + 1} of ${mediaItems.size}..."
+
+                val folder = if (type == "video") "posts/videos" else "posts/images"
+
+                var success = false
+                cloudinaryDataSource.uploadImage(
+                    uri = uri,
+                    folder = folder,
+                    onSuccess = { url ->
+                        uploadedUrls.add(url)
+                        uploadedTypes.add(type)
+                        success = true
+                    },
+                    onError = { error ->
+                        _createPostState.postValue(Resource.Error("Failed to upload item ${index + 1}: $error"))
+                    },
+                    onProgress = { progress ->
+                        _uploadProgress.postValue(progress)
                     }
+                )
 
-                    val post = Post(
-                        postId = UUID.randomUUID().toString(),
-                        authorUid = currentUid,
-                        authorUsername = user.username,
-                        authorProfileImageUrl = user.profileImageUrl,
-                        imageUrl = imageUrl,
-                        caption = caption,
-                        createdAt = System.currentTimeMillis()
-                    )
-
-                    _createPostState.value = postRepository.createPost(post)
+                // wait for upload to finish
+                var waited = 0
+                while (!success && waited < 60000) {
+                    delay(100)
+                    waited += 100
                 }
-            },
-            onError = { error ->
-                _createPostState.value = Resource.Error(error)
-            },
-            onProgress = { progress ->
-                _uploadProgress.postValue(progress)
+
+                if (!success) {
+                    _createPostState.value = Resource.Error("Upload timed out")
+                    return@launch
+                }
             }
-        )
+
+            val user = _currentUser.value
+            if (user == null) {
+                _createPostState.value = Resource.Error("User not found")
+                return@launch
+            }
+
+            val post = Post(
+                postId = UUID.randomUUID().toString(),
+                authorUid = currentUid,
+                authorUsername = user.username,
+                authorProfileImageUrl = user.profileImageUrl,
+                mediaUrls = uploadedUrls,
+                mediaTypes = uploadedTypes,
+                caption = caption,
+                createdAt = System.currentTimeMillis()
+            )
+
+            _createPostState.value = postRepository.createPost(post)
+        }
     }
 }

@@ -2,6 +2,7 @@ package com.connect.medium.utils
 
 import com.connect.medium.data.local.entity.*
 import com.connect.medium.data.model.*
+import com.google.gson.Gson
 
 // User
 fun User.toEntity(): UserEntity = UserEntity(
@@ -16,13 +17,29 @@ fun UserEntity.toModel(): User = User(
 
 // Post
 fun Post.toEntity(): PostEntity = PostEntity(
-    postId, authorUid, authorUsername, authorProfileImageUrl,
-    imageUrl, caption, likeCount, commentCount, createdAt
+    postId = postId,
+    authorUid = authorUid,
+    authorUsername = authorUsername,
+    authorProfileImageUrl = authorProfileImageUrl,
+    mediaUrls = Gson().toJson(mediaUrls),
+    mediaTypes = Gson().toJson(mediaTypes),
+    caption = caption,
+    likeCount = likeCount,
+    commentCount = commentCount,
+    createdAt = createdAt
 )
 
 fun PostEntity.toModel(): Post = Post(
-    postId, authorUid, authorUsername, authorProfileImageUrl,
-    imageUrl, caption, likeCount, commentCount, createdAt
+    postId = postId,
+    authorUid = authorUid,
+    authorUsername = authorUsername,
+    authorProfileImageUrl = authorProfileImageUrl,
+    mediaUrls = Gson().fromJson(mediaUrls, Array<String>::class.java).toList(),
+    mediaTypes = Gson().fromJson(mediaTypes, Array<String>::class.java).toList(),
+    caption = caption,
+    likeCount = likeCount,
+    commentCount = commentCount,
+    createdAt = createdAt
 )
 
 // Notification

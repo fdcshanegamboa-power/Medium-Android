@@ -11,36 +11,46 @@
         android:layout_height="match_parent"
         android:padding="16dp">
 
-        <!-- Selected Image Preview -->
-        <ImageView
-            android:id="@+id/iv_post_image"
+        <!-- Media Preview Horizontal List -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_media_preview"
             android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:scaleType="centerCrop"
-            android:background="@color/gray"
-            android:contentDescription="Post image"
+            android:layout_height="120dp"
+            android:visibility="visible"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"/>
 
-        <!-- Pick Image Button -->
+        <!-- Media Count -->
+        <TextView
+            android:id="@+id/tv_media_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:textColor="@color/gray"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/rv_media_preview"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="4dp"/>
+
+        <!-- Pick Media Button -->
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_pick_image"
+            android:id="@+id/btn_pick_media"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Pick Image"
-            app:layout_constraintTop_toBottomOf="@id/iv_post_image"
+            android:text="Add Photos / Videos"
+            app:layout_constraintTop_toBottomOf="@id/tv_media_count"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginTop="12dp"/>
 
-        <!-- Caption Input -->
+        <!-- Caption -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/til_caption"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Write a caption..."
-            app:layout_constraintTop_toBottomOf="@id/btn_pick_image"
+            app:layout_constraintTop_toBottomOf="@id/btn_pick_media"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginTop="12dp">
 
@@ -69,7 +79,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:visibility="gone"
-            android:text="Uploading... 0%"
             android:textSize="12sp"
             app:layout_constraintTop_toBottomOf="@id/progress_upload"
             app:layout_constraintStart_toStartOf="parent"

@@ -71,26 +71,31 @@ class PostAdapter(
     inner class PostViewHolder(
         private val binding: ItemPostBinding
     ) : RecyclerView.ViewHolder(binding.root) {
-
         fun bind(post: Post) {
-            // author info
             binding.tvUsername.text = post.authorUsername
             binding.tvCaption.text = post.caption
             binding.tvLikeCount.text = post.likeCount.toString()
             binding.tvCommentCount.text = post.commentCount.toString()
+            binding.tvTimestamp.text = getRelativeTime(post.createdAt)
 
-            // post image
-            Glide.with(binding.root)
-                .load(post.imageUrl)
-                .centerCrop()
-                .into(binding.ivPostImage)
-
-            // author profile image
+            // profile image
             Glide.with(binding.root)
                 .load(post.authorProfileImageUrl)
                 .placeholder(R.drawable.ic_profile)
                 .circleCrop()
                 .into(binding.ivProfileImage)
+
+            // setup media carousel
+            val mediaAdapter = PostMediaAdapter(post.mediaUrls, post.mediaTypes)
+            binding.viewPagerMedia.adapter = mediaAdapter
+
+            // show dots indicator only if multiple media
+            if (post.mediaUrls.size > 1) {
+                binding.dotsIndicator.visibility = View.VISIBLE
+                binding.dotsIndicator.attachTo(binding.viewPagerMedia)
+            } else {
+                binding.dotsIndicator.visibility = View.GONE
+            }
 
             // like button state
             val isLiked = likedPosts.contains(post.postId)
@@ -98,10 +103,6 @@ class PostAdapter(
                 if (isLiked) R.drawable.ic_heart_filled else R.drawable.ic_heart_outline
             )
 
-            // timestamp
-            binding.tvTimestamp.text = getRelativeTime(post.createdAt)
-
-            // click listeners
             binding.btnLike.setOnClickListener { onLikeClick(post) }
             binding.btnComment.setOnClickListener { onCommentClick(post) }
             binding.ivProfileImage.setOnClickListener { onProfileClick(post.authorUid) }
