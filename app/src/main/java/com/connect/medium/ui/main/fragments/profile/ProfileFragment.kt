@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
@@ -60,6 +61,19 @@ class ProfileFragment : Fragment() {
 
         if (targetUid != viewModel.currentUid) {
             viewModel.observeIsFollowing(targetUid)
+        }
+
+        if (targetUid == viewModel.currentUid) {
+            binding.toolbar.inflateMenu(R.menu.menu_profile)
+            binding.toolbar.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.action_settings -> {
+                        findNavController().navigate(R.id.action_profile_to_settings)
+                        true
+                    }
+                    else -> false
+                }
+            }
         }
 
 

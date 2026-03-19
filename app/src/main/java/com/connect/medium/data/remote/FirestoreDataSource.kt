@@ -54,7 +54,7 @@ class FirestoreDataSource {
             .document(uid)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
-                    close(error)
+                    trySend(null)
                     return@addSnapshotListener
                 }
                 trySend(snapshot?.toObject(User::class.java))
@@ -89,7 +89,7 @@ class FirestoreDataSource {
             .limit(50)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
-                    close(error)
+                    trySend(emptyList())
                     return@addSnapshotListener
                 }
                 val posts = snapshot?.toObjects(Post::class.java) ?: emptyList()
@@ -104,7 +104,7 @@ class FirestoreDataSource {
             .orderBy("createdAt", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
-                    close(error)
+                    trySend(emptyList())
                     return@addSnapshotListener
                 }
                 val posts = snapshot?.toObjects(Post::class.java) ?: emptyList()
@@ -288,7 +288,7 @@ class FirestoreDataSource {
             .orderBy("createdAt", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
-                    close(error)
+                    trySend(emptyList())
                     return@addSnapshotListener
                 }
                 val notifications = snapshot?.toObjects(Notification::class.java) ?: emptyList()

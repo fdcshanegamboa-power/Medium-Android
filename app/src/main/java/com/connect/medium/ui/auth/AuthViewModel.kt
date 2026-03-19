@@ -62,6 +62,9 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             _authState.value = result
         }
     }
+    fun logout() {
+        authRepository.logout()
+    }
 
     fun isLoggedIn() = authRepository.isLoggedIn()
     fun getCurrentUser() = authRepository.getCurrentUser()

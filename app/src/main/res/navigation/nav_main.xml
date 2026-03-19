@@ -49,6 +49,15 @@
             app:argType="string"
             app:nullable="true"
             android:defaultValue="@null"/>
+
+        <action
+            android:id="@+id/action_profile_to_settings"
+            app:destination="@id/settingsFragment"/>
     </fragment>
+
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.connect.medium.ui.main.fragments.settings.SettingsFragment"
+        android:label="Settings"/>
 
 </navigation>
