@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import com.connect.medium.databinding.ActivityMainBinding
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import com.connect.medium.ui.main.fragments.notifications.NotificationsViewModel
 import com.connect.medium.ui.main.fragments.notifications.NotificationsViewModelFactory
@@ -25,7 +26,21 @@ class MainActivity : AppCompatActivity() {
         val navHostFragment = supportFragmentManager
             .findFragmentById(R.id.main_nav_host) as NavHostFragment
         navController = navHostFragment.navController
+
+        val appBarConfig = AppBarConfiguration(
+            setOf(
+                R.id.homeFragment,
+                R.id.searchFragment,
+                R.id.notificationsFragment,
+                R.id.profileFragment
+            )
+        )
+
         binding.bottomNav.setupWithNavController(navController)
+
+        binding.fabCreate.setOnClickListener {
+            navController.navigate(R.id.createPostFragment)
+        }
         setupNotificationBadge()
     }
     private fun setupNotificationBadge(){

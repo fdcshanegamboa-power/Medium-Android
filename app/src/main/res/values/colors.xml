@@ -1,37 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- Base -->
-    <color name="background">#FAFAFA</color>
-    <color name="foreground">#1C1C1C</color>
+    <!-- Brand Purple -->
+    <color name="purple_50">#F3EEFF</color>
+    <color name="purple_100">#E4D4FF</color>
+    <color name="purple_200">#C9AAFF</color>
+    <color name="purple_300">#A87FFF</color>
+    <color name="purple_400">#8B5CF6</color>
+    <color name="purple_500">#7C3AED</color>
+    <color name="purple_600">#6D28D9</color>
+    <color name="purple_700">#5B21B6</color>
+    <color name="purple_800">#4C1D95</color>
+    <color name="purple_900">#2E1065</color>
 
-    <!-- Primary (buttons / actions) -->
-    <color name="primary">#0095F6</color>
+    <!-- Semantic -->
+    <color name="primary">#7C3AED</color>
+    <color name="primary_variant">#6D28D9</color>
     <color name="primary_foreground">#FFFFFF</color>
 
-    <!-- Secondary (subtle buttons) -->
-    <color name="secondary">#EFEFEF</color>
-    <color name="secondary_foreground">#262626</color>
+    <color name="secondary">#F3EEFF</color>
+    <color name="secondary_foreground">#4C1D95</color>
 
-    <!-- Muted text -->
-    <color name="muted">#F2F2F2</color>
+    <!-- Background / Surface -->
+    <color name="background">#FAFAFA</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_variant">#F3EEFF</color>
+
+    <!-- Foreground / Text -->
+    <color name="foreground">#1C1C1C</color>
     <color name="muted_foreground">#8E8E8E</color>
 
-    <!-- Borders / inputs -->
-    <color name="border">#DBDBDB</color>
+    <!-- Border / Input -->
+    <color name="border">#E4D4FF</color>
     <color name="input">#FAFAFA</color>
+    <color name="muted">#F2F2F2</color>
 
     <!-- States -->
     <color name="error">#ED4956</color>
     <color name="success">#4CAF50</color>
 
-    <!-- Legacy (optional keep/remove) -->
+    <!-- Bottom Nav -->
+    <color name="nav_background">#1C1C1C</color>
+    <color name="nav_item_active">#8B5CF6</color>
+    <color name="nav_item_inactive">#9E9E9E</color>
+    <color name="nav_fab">#7C3AED</color>
+
+    <!-- Utility -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="gray">#808080</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
-    <color name="orange_500">#FFFF5722</color>
+
 </resources>
