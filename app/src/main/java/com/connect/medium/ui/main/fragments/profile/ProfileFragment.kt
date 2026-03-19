@@ -61,9 +61,11 @@ class ProfileFragment : Fragment() {
 
         if (targetUid != viewModel.currentUid) {
             viewModel.observeIsFollowing(targetUid)
-        }
-
-        if (targetUid == viewModel.currentUid) {
+            binding.toolbar.setNavigationIcon(R.drawable.ic_back)
+            binding.toolbar.setNavigationOnClickListener{
+                findNavController().popBackStack()
+            }
+        } else {
             binding.toolbar.inflateMenu(R.menu.menu_profile)
             binding.toolbar.setOnMenuItemClickListener { item ->
                 when (item.itemId) {
@@ -76,6 +78,9 @@ class ProfileFragment : Fragment() {
             }
         }
 
+        binding.btnCreateFirstPost.setOnClickListener {
+            findNavController().navigate(R.id.createPostFragment)
+        }
 
     }
 
@@ -117,6 +122,23 @@ class ProfileFragment : Fragment() {
             if (resource is Resource.Success) {
                 postGridAdapter.submitList(resource.data)
                 binding.tvPostCount.text = resource.data.size.toString()
+
+                if (resource.data.isEmpty()) {
+                    binding.emptyState.visibility = View.VISIBLE
+                    binding.rvPosts.visibility = View.GONE
+
+                    // show create button only on own profile
+                    if (targetUid == viewModel.currentUid) {
+                        binding.btnCreateFirstPost.visibility = View.VISIBLE
+                        binding.tvEmptySubtitle.text = "Share your first photo or video"
+                    } else {
+                        binding.btnCreateFirstPost.visibility = View.GONE
+                        binding.tvEmptySubtitle.text = "No posts yet"
+                    }
+                } else {
+                    binding.emptyState.visibility = View.GONE
+                    binding.rvPosts.visibility = View.VISIBLE
+                }
             }
         }
 
@@ -126,10 +148,17 @@ class ProfileFragment : Fragment() {
     }
 
     private fun bindUser(user: User) {
+        binding.tvUsername.text = "@${user.username}"
         binding.tvDisplayName.text = user.displayName
         binding.tvBio.text = user.bio
         binding.tvFollowerCount.text = user.followerCount.toString()
         binding.tvFollowingCount.text = user.followingCount.toString()
+
+        if (user.bio.isNullOrEmpty()) {
+            binding.tvBio.visibility = View.GONE
+        } else {
+            binding.tvBio.visibility = View.VISIBLE
+        }
 
         Glide.with(this)
             .load(user.profileImageUrl)

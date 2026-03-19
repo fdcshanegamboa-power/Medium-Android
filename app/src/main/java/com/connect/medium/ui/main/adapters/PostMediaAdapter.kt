@@ -1,8 +1,11 @@
 package com.connect.medium.ui.main.adapters
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.media3.common.MediaItem
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -10,6 +13,8 @@ import com.connect.medium.R
 import com.connect.medium.databinding.ItemPostVideoBinding
 import com.connect.medium.databinding.ItemPostImageBinding
 
+
+@UnstableApi
 class PostMediaAdapter(
     private val mediaUrls: List<String>,
     private val mediaTypes: List<String>
@@ -50,6 +55,11 @@ class PostMediaAdapter(
 
     override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
         super.onViewRecycled(holder)
+
+        when (holder) {
+            is VideoViewHolder -> holder.release()
+            is ImageViewHolder -> holder.clear()
+        }
         if (holder is VideoViewHolder) {
             holder.release()
         }
@@ -69,7 +79,11 @@ class PostMediaAdapter(
             Glide.with(binding.root)
                 .load(url)
                 .centerCrop()
+                .override(1080, 1920)
                 .into(binding.ivPostImage)
+        }
+        fun clear() {
+            Glide.with(binding.root).clear(binding.ivPostImage)
         }
     }
 
@@ -80,21 +94,38 @@ class PostMediaAdapter(
         private var player: ExoPlayer? = null
         private var isMuted = false
 
+        private fun createPlayer(context: Context): ExoPlayer {
+            return ExoPlayer.Builder(context.applicationContext)
+                .setLoadControl(
+                    DefaultLoadControl.Builder()
+                        .setBufferDurationsMs(
+                            15000, // min buffer
+                            30000, // max buffer
+                            1000,  // playback buffer
+                            2000   // rebuffer
+                        )
+                        .setTargetBufferBytes(10 * 1024 * 1024) // 10MB
+                        .setPrioritizeTimeOverSizeThresholds(true)
+                        .build()
+                )
+                .build()
+        }
+
         fun bind(url: String) {
-            release() // always release before binding new
+            release()
 
             isMuted = false
             binding.btnMute.setImageResource(R.drawable.ic_volume_on)
             binding.btnPlayPause.setImageResource(R.drawable.ic_play)
 
-            player = ExoPlayer.Builder(binding.root.context.applicationContext) // use applicationContext
-                .build().apply {
-                    setMediaItem(MediaItem.fromUri(url))
-                    repeatMode = ExoPlayer.REPEAT_MODE_ONE
-                    volume = 1f
-                    prepare()
-                    playWhenReady = false
-                }
+            // Use createPlayer() instead of direct ExoPlayer.Builder
+            player = createPlayer(binding.root.context).apply {
+                setMediaItem(MediaItem.fromUri(url))
+                repeatMode = ExoPlayer.REPEAT_MODE_OFF
+                volume = 1f
+                prepare()
+                playWhenReady = false
+            }
 
             binding.playerView.player = player
 
@@ -102,23 +133,28 @@ class PostMediaAdapter(
             binding.btnMute.setOnClickListener(null)
 
             binding.btnPlayPause.setOnClickListener {
-                if (player?.isPlaying == true) {
-                    player?.pause()
-                    binding.btnPlayPause.setImageResource(R.drawable.ic_play)
-                } else {
-                    player?.play()
-                    binding.btnPlayPause.setImageResource(R.drawable.ic_pause)
+                player?.let { p ->
+                    if (p.isPlaying) {
+                        p.pause()
+                        binding.btnPlayPause.setImageResource(R.drawable.ic_play)
+                    } else {
+                        p.play()
+                        binding.btnPlayPause.setImageResource(R.drawable.ic_pause)
+                    }
                 }
             }
 
             binding.btnMute.setOnClickListener {
-                isMuted = !isMuted
-                player?.volume = if (isMuted) 0f else 1f
-                binding.btnMute.setImageResource(
-                    if (isMuted) R.drawable.ic_volume_off else R.drawable.ic_volume_on
-                )
+                player?.let { p ->
+                    isMuted = !isMuted
+                    p.volume = if (isMuted) 0f else 1f
+                    binding.btnMute.setImageResource(
+                        if (isMuted) R.drawable.ic_volume_off else R.drawable.ic_volume_on
+                    )
+                }
             }
         }
+
 
         fun pause() {
             player?.pause()
@@ -126,12 +162,19 @@ class PostMediaAdapter(
         }
 
         fun release() {
+            // Remove listeners to prevent memory leaks
+            binding.btnPlayPause.setOnClickListener(null)
+            binding.btnMute.setOnClickListener(null)
 
             binding.playerView.player = null
-            player?.stop()
-            player?.clearMediaItems()
-            player?.release()
+
+            player?.let { p ->
+                p.stop()
+                p.clearMediaItems()
+                p.release()
+            }
             player = null
         }
     }
+
 }

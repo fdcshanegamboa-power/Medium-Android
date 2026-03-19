@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.viewModels
+import androidx.media3.common.util.UnstableApi
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.connect.medium.R
@@ -25,6 +26,8 @@ private const val ARG_PARAM2 = "param2"
  * Use the [HomeFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
+
+@UnstableApi
 class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
@@ -48,6 +51,9 @@ class HomeFragment : Fragment() {
 
         binding.swipeRefresh.setOnRefreshListener {
             viewModel.loadFeed()
+        }
+        binding.btnCreatePost.setOnClickListener {
+            findNavController().navigate(R.id.createPostFragment)
         }
     }
 
@@ -77,8 +83,16 @@ class HomeFragment : Fragment() {
                 is Resource.Loading -> binding.swipeRefresh.isRefreshing = true
                 is Resource.Success -> {
                     binding.swipeRefresh.isRefreshing = false
-                    postAdapter.submitList(resource.data)
-                    viewModel.checkLikedPosts(resource.data.map { it.postId})
+                    binding.swipeRefresh.isRefreshing = false
+                    if (resource.data.isEmpty()) {
+                        binding.emptyState.visibility = View.VISIBLE
+                        binding.rvFeed.visibility = View.GONE
+                    } else {
+                        binding.emptyState.visibility = View.GONE
+                        binding.rvFeed.visibility = View.VISIBLE
+                        postAdapter.submitList(resource.data)
+                        viewModel.checkLikedPosts(resource.data.map { it.postId })
+                    }
                 }
                 is Resource.Error -> {
                     binding.swipeRefresh.isRefreshing = false

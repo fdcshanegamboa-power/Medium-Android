@@ -2,6 +2,7 @@ package com.connect.medium.ui.main
 
 import com.connect.medium.R
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
@@ -37,9 +38,24 @@ class MainActivity : AppCompatActivity() {
         )
 
         binding.bottomNav.setupWithNavController(navController)
-
+        binding.bottomNav.menu.findItem(R.id.placeholder)?.apply {
+            isEnabled = false
+        }
         binding.fabCreate.setOnClickListener {
             navController.navigate(R.id.createPostFragment)
+        }
+
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            when (destination.id) {
+                R.id.createPostFragment, R.id.settingsFragment -> {
+                    binding.fabCreate.hide()
+                    binding.bottomNav.visibility = View.GONE
+                }
+                else -> {
+                    binding.fabCreate.show()
+                    binding.bottomNav.visibility = View.VISIBLE
+                }
+            }
         }
         setupNotificationBadge()
     }

@@ -3,6 +3,7 @@ package com.connect.medium.ui.main.adapters
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.connect.medium.R
@@ -10,6 +11,8 @@ import com.connect.medium.data.model.Post
 import com.connect.medium.databinding.ItemPostBinding
 import androidx.viewpager2.widget.ViewPager2
 
+
+@UnstableApi
 class PostAdapter(
     private val onLikeClick: (Post) -> Unit,
     private val onCommentClick: (Post) -> Unit,
@@ -18,6 +21,10 @@ class PostAdapter(
 
     private var posts = listOf<Post>()
     private var likedPosts = mutableSetOf<String>()
+
+    init {
+        setHasStableIds(false)
+    }
 
     fun submitList(newPosts: List<Post>) {
         posts = newPosts
@@ -87,6 +94,13 @@ class PostAdapter(
         }
     }
 
+    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+        super.onAttachedToRecyclerView(recyclerView)
+        recyclerView.setItemViewCacheSize(5) // Limit cached views
+        recyclerView.recycledViewPool.setMaxRecycledViews(0, 10) // Limit VIDEO holders
+        recyclerView.recycledViewPool.setMaxRecycledViews(1, 20) // Limit IMAGE holders
+    }
+
 
 
     inner class PostViewHolder(
@@ -108,13 +122,26 @@ class PostAdapter(
                 .circleCrop()
                 .into(binding.ivProfileImage)
 
-            val mediaAdapter = PostMediaAdapter(post.mediaUrls, post.mediaTypes)
-            binding.viewPagerMedia.adapter = mediaAdapter
-
+            binding.viewPagerMedia.offscreenPageLimit = 1
             pageChangeCallback?.let {
                 binding.viewPagerMedia.unregisterOnPageChangeCallback(it)
             }
-
+            pageChangeCallback = null
+            (binding.viewPagerMedia.adapter as? PostMediaAdapter)?.let { oldAdapter ->
+                val rv = binding.viewPagerMedia.getChildAt(0) as? RecyclerView
+                rv?.let { recyclerView ->
+                    for (i in 0 until recyclerView.childCount) {
+                        val holder = recyclerView.getChildViewHolder(recyclerView.getChildAt(i))
+                        when(holder) {
+                            is PostMediaAdapter.VideoViewHolder -> holder.release()
+                            is PostMediaAdapter.ImageViewHolder -> holder.clear()
+                        }
+                    }
+                }
+            }
+            binding.viewPagerMedia.adapter = null
+            val mediaAdapter = PostMediaAdapter(post.mediaUrls, post.mediaTypes)
+            binding.viewPagerMedia.adapter = mediaAdapter
             pageChangeCallback = object : ViewPager2.OnPageChangeCallback() {
                 override fun onPageSelected(position: Int) {
                     super.onPageSelected(position)
@@ -130,24 +157,6 @@ class PostAdapter(
                 }
             }
             binding.viewPagerMedia.registerOnPageChangeCallback(pageChangeCallback!!)
-
-            // pause all videos when swiping to next media item
-            binding.viewPagerMedia.registerOnPageChangeCallback(
-                object : ViewPager2.OnPageChangeCallback() {
-                    override fun onPageSelected(position: Int) {
-                        super.onPageSelected(position)
-                        val rv = binding.viewPagerMedia.getChildAt(0) as? RecyclerView
-                        rv?.let {
-                            for (i in 0 until it.childCount) {
-                                val holder = it.getChildViewHolder(it.getChildAt(i))
-                                if (holder is PostMediaAdapter.VideoViewHolder) {
-                                    holder.pause()
-                                }
-                            }
-                        }
-                    }
-                }
-            )
 
             if (post.mediaUrls.size > 1) {
                 binding.dotsIndicator.visibility = View.VISIBLE
@@ -166,6 +175,7 @@ class PostAdapter(
             binding.ivProfileImage.setOnClickListener { onProfileClick(post.authorUid) }
             binding.tvUsername.setOnClickListener { onProfileClick(post.authorUid) }
         }
+
 
         private fun getRelativeTime(timestamp: Long): String {
             val diff = System.currentTimeMillis() - timestamp
