@@ -48,8 +48,21 @@ class PostMediaAdapter(
 
     override fun getItemCount() = mediaUrls.size
 
-    // Image ViewHolder
-    inner class ImageViewHolder(
+    override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
+        super.onViewRecycled(holder)
+        if (holder is VideoViewHolder) {
+            holder.release()
+        }
+    }
+
+    override fun onViewDetachedFromWindow(holder: RecyclerView.ViewHolder) {
+        super.onViewDetachedFromWindow(holder)
+        if (holder is VideoViewHolder) {
+            holder.pause()
+        }
+    }
+
+    class ImageViewHolder(
         private val binding: ItemPostImageBinding
     ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(url: String) {
@@ -60,20 +73,33 @@ class PostMediaAdapter(
         }
     }
 
-    // Video ViewHolder
-    inner class VideoViewHolder(
+    class VideoViewHolder(
         private val binding: ItemPostVideoBinding
     ) : RecyclerView.ViewHolder(binding.root) {
+
         private var player: ExoPlayer? = null
+        private var isMuted = false
 
         fun bind(url: String) {
-            player?.release()
-            player = ExoPlayer.Builder(binding.root.context).build().apply {
-                setMediaItem(MediaItem.fromUri(url))
-                prepare()
-                playWhenReady = false
-            }
+            release() // always release before binding new
+
+            isMuted = false
+            binding.btnMute.setImageResource(R.drawable.ic_volume_on)
+            binding.btnPlayPause.setImageResource(R.drawable.ic_play)
+
+            player = ExoPlayer.Builder(binding.root.context.applicationContext) // use applicationContext
+                .build().apply {
+                    setMediaItem(MediaItem.fromUri(url))
+                    repeatMode = ExoPlayer.REPEAT_MODE_ONE
+                    volume = 1f
+                    prepare()
+                    playWhenReady = false
+                }
+
             binding.playerView.player = player
+
+            binding.btnPlayPause.setOnClickListener(null)
+            binding.btnMute.setOnClickListener(null)
 
             binding.btnPlayPause.setOnClickListener {
                 if (player?.isPlaying == true) {
@@ -84,9 +110,26 @@ class PostMediaAdapter(
                     binding.btnPlayPause.setImageResource(R.drawable.ic_pause)
                 }
             }
+
+            binding.btnMute.setOnClickListener {
+                isMuted = !isMuted
+                player?.volume = if (isMuted) 0f else 1f
+                binding.btnMute.setImageResource(
+                    if (isMuted) R.drawable.ic_volume_off else R.drawable.ic_volume_on
+                )
+            }
+        }
+
+        fun pause() {
+            player?.pause()
+            binding.btnPlayPause.setImageResource(R.drawable.ic_play)
         }
 
         fun release() {
+
+            binding.playerView.player = null
+            player?.stop()
+            player?.clearMediaItems()
             player?.release()
             player = null
         }

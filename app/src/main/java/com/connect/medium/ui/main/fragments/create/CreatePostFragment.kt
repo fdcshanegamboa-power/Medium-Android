@@ -1,5 +1,7 @@
 package com.connect.medium.ui.main.fragments.create
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -7,14 +9,21 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.registerForActivityResult
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.connect.medium.R
 import com.connect.medium.databinding.FragmentCreatePostBinding
 import com.connect.medium.ui.main.adapters.MediaPreviewAdapter
 import com.connect.medium.utils.Resource
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.FlowPreview
+import java.io.File
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -35,6 +44,10 @@ class CreatePostFragment : Fragment() {
     }
     private val selectedMedia = mutableListOf<Pair<Uri, String>>()
     private lateinit var mediaPreviewAdapter: MediaPreviewAdapter
+    private var isToolbarExpanded = false
+
+    private var cameraImageUri: Uri? = null
+    private var cameraVideoUri: Uri? = null
 
     private val pickMediaLauncher = registerForActivityResult(
         ActivityResultContracts.OpenMultipleDocuments()
@@ -59,6 +72,56 @@ class CreatePostFragment : Fragment() {
         }
         mediaPreviewAdapter.submitList(selectedMedia.toList())
         updateMediaCount()
+    }
+
+    private val takePictureLauncher = registerForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success) {
+            cameraImageUri?.let { uri ->
+                selectedMedia.add(Pair(uri, "image"))
+                mediaPreviewAdapter.submitList(selectedMedia.toList())
+                updateMediaCount()
+            }
+        }
+    }
+
+    private val takeVideoLauncher = registerForActivityResult(
+        ActivityResultContracts.CaptureVideo()
+    ) { success ->
+
+        if(!success) return@registerForActivityResult
+        cameraVideoUri?.let { uri ->
+            val fileSize = requireContext().contentResolver
+                .openFileDescriptor(uri, "r")?.statSize ?: 0
+            if (fileSize > 50 * 1024 * 1024L) {
+                Toast.makeText(
+                    requireContext(),
+                    "Video exceeds 50MB limit: ${fileSize / (1024 * 1024)}MB",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@registerForActivityResult
+            }
+            selectedMedia.add(Pair(uri, "video"))
+            mediaPreviewAdapter.submitList(selectedMedia.toList())
+            updateMediaCount()
+        }
+    }
+
+    private val cameraPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val cameraGranted = permissions[Manifest.permission.CAMERA] == true
+        val audioGranted = permissions[Manifest.permission.RECORD_AUDIO] == true
+        if (cameraGranted) {
+            showCameraOptions()
+        } else {
+            Toast.makeText(
+                requireContext(),
+                "Camera permission is required",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
     }
 
     override fun onCreateView(
@@ -93,8 +156,20 @@ class CreatePostFragment : Fragment() {
     }
 
     private fun setupClickListeners() {
+        binding.btnClose.setOnClickListener {
+            findNavController().popBackStack()
+        }
+
         binding.btnPickMedia.setOnClickListener {
             pickMediaLauncher.launch(arrayOf("image/*", "video/*"))
+        }
+
+        binding.btnCamera.setOnClickListener {
+            checkCameraPermissionAndOpen()
+        }
+
+        binding.btnExpand.setOnClickListener {
+            toggleToolbar()
         }
 
         binding.btnPost.setOnClickListener {
@@ -105,6 +180,87 @@ class CreatePostFragment : Fragment() {
             }
             viewModel.createPost(selectedMedia.toList(), caption)
         }
+    }
+    private fun checkCameraPermissionAndOpen() {
+        when {
+            ContextCompat.checkSelfPermission(
+                requireContext(), Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                showCameraOptions()
+            }
+            shouldShowRequestPermissionRationale(Manifest.permission.CAMERA) -> {
+                MaterialAlertDialogBuilder(requireContext())
+                    .setTitle("Camera Permission")
+                    .setMessage("Camera access is needed to take photos and videos for your post.")
+                    .setPositiveButton("Grant") { _, _ ->
+                        cameraPermissionLauncher.launch(
+                            arrayOf(
+                                Manifest.permission.CAMERA,
+                                Manifest.permission.RECORD_AUDIO
+                            )
+                        )
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
+            }
+            else -> {
+                cameraPermissionLauncher.launch(
+                    arrayOf(
+                        Manifest.permission.CAMERA,
+                        Manifest.permission.RECORD_AUDIO
+                    )
+                )
+            }
+        }
+    }
+
+    private fun showCameraOptions() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Camera")
+            .setItems(arrayOf("Take Photo", "Record Video")) { _, which ->
+                when (which) {
+                    0 -> launchCameraPhoto()
+                    1 -> launchCameraVideo()
+                }
+            }
+            .show()
+    }
+
+    private fun launchCameraPhoto() {
+        val photoFile = File.createTempFile(
+            "photo_${System.currentTimeMillis()}",
+            ".jpg",
+            requireContext().externalCacheDir
+        )
+        cameraImageUri = FileProvider.getUriForFile(
+            requireContext(),
+            "${requireContext().packageName}.fileprovider",
+            photoFile
+        )
+        takePictureLauncher.launch(cameraImageUri!!)
+    }
+
+    private fun launchCameraVideo() {
+        val videoFile = File.createTempFile(
+            "video_${System.currentTimeMillis()}",
+            ".mp4",
+            requireContext().externalCacheDir
+        )
+        cameraVideoUri = FileProvider.getUriForFile(
+            requireContext(),
+            "${requireContext().packageName}.fileprovider",
+            videoFile
+        )
+        takeVideoLauncher.launch(cameraVideoUri!!)
+    }
+
+    private fun toggleToolbar() {
+        isToolbarExpanded = !isToolbarExpanded
+        binding.expandedOptions.visibility =
+            if (isToolbarExpanded) View.VISIBLE else View.GONE
+        binding.btnExpand.setImageResource(
+            if (isToolbarExpanded) R.drawable.ic_expand_more else R.drawable.ic_expand_less
+        )
     }
 
     private fun updateMediaCount() {

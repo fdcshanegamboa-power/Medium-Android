@@ -8,6 +8,7 @@ import com.bumptech.glide.Glide
 import com.connect.medium.R
 import com.connect.medium.data.model.Post
 import com.connect.medium.databinding.ItemPostBinding
+import androidx.viewpager2.widget.ViewPager2
 
 class PostAdapter(
     private val onLikeClick: (Post) -> Unit,
@@ -50,12 +51,10 @@ class PostAdapter(
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder) {
             is PostViewHolder -> {
-                val post = posts[position - 1] // offset for header
+                val post = posts[position - 1]
                 holder.bind(post)
             }
-            is HeaderViewHolder -> {
-                // nothing yet (you can bind header data later)
-            }
+            is HeaderViewHolder -> {}
         }
     }
 
@@ -63,14 +62,39 @@ class PostAdapter(
         return if (position == 0) VIEW_TYPE_HEADER else VIEW_TYPE_POST
     }
 
-    override fun getItemCount(): Int {
-        return posts.size + 1
+    override fun getItemCount() = posts.size + 1
+
+    // release all players when post is recycled
+    override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
+        super.onViewRecycled(holder)
+        if (holder is PostViewHolder) {
+
+            holder.pageChangeCallback?.let {
+                holder.binding.viewPagerMedia.unregisterOnPageChangeCallback(it)
+            }
+            holder.pageChangeCallback = null
+
+            val rv = holder.binding.viewPagerMedia.getChildAt(0) as? RecyclerView
+            rv?.let {
+                for (i in 0 until it.childCount) {
+                    val mediaHolder = it.getChildViewHolder(it.getChildAt(i))
+                    if (mediaHolder is PostMediaAdapter.VideoViewHolder) {
+                        mediaHolder.release()
+                    }
+                }
+            }
+            holder.binding.viewPagerMedia.adapter = null
+        }
     }
 
 
+
     inner class PostViewHolder(
-        private val binding: ItemPostBinding
+        val binding: ItemPostBinding  // changed to val so onViewRecycled can access it
     ) : RecyclerView.ViewHolder(binding.root) {
+
+        public var pageChangeCallback: ViewPager2.OnPageChangeCallback? = null
+
         fun bind(post: Post) {
             binding.tvUsername.text = post.authorUsername
             binding.tvCaption.text = post.caption
@@ -78,18 +102,53 @@ class PostAdapter(
             binding.tvCommentCount.text = post.commentCount.toString()
             binding.tvTimestamp.text = getRelativeTime(post.createdAt)
 
-            // profile image
             Glide.with(binding.root)
                 .load(post.authorProfileImageUrl)
                 .placeholder(R.drawable.ic_profile)
                 .circleCrop()
                 .into(binding.ivProfileImage)
 
-            // setup media carousel
             val mediaAdapter = PostMediaAdapter(post.mediaUrls, post.mediaTypes)
             binding.viewPagerMedia.adapter = mediaAdapter
 
-            // show dots indicator only if multiple media
+            pageChangeCallback?.let {
+                binding.viewPagerMedia.unregisterOnPageChangeCallback(it)
+            }
+
+            pageChangeCallback = object : ViewPager2.OnPageChangeCallback() {
+                override fun onPageSelected(position: Int) {
+                    super.onPageSelected(position)
+                    val rv = binding.viewPagerMedia.getChildAt(0) as? RecyclerView
+                    rv?.let {
+                        for (i in 0 until it.childCount) {
+                            val holder = it.getChildViewHolder(it.getChildAt(i))
+                            if (holder is PostMediaAdapter.VideoViewHolder) {
+                                holder.pause()
+                            }
+                        }
+                    }
+                }
+            }
+            binding.viewPagerMedia.registerOnPageChangeCallback(pageChangeCallback!!)
+
+            // pause all videos when swiping to next media item
+            binding.viewPagerMedia.registerOnPageChangeCallback(
+                object : ViewPager2.OnPageChangeCallback() {
+                    override fun onPageSelected(position: Int) {
+                        super.onPageSelected(position)
+                        val rv = binding.viewPagerMedia.getChildAt(0) as? RecyclerView
+                        rv?.let {
+                            for (i in 0 until it.childCount) {
+                                val holder = it.getChildViewHolder(it.getChildAt(i))
+                                if (holder is PostMediaAdapter.VideoViewHolder) {
+                                    holder.pause()
+                                }
+                            }
+                        }
+                    }
+                }
+            )
+
             if (post.mediaUrls.size > 1) {
                 binding.dotsIndicator.visibility = View.VISIBLE
                 binding.dotsIndicator.attachTo(binding.viewPagerMedia)
@@ -97,7 +156,6 @@ class PostAdapter(
                 binding.dotsIndicator.visibility = View.GONE
             }
 
-            // like button state
             val isLiked = likedPosts.contains(post.postId)
             binding.btnLike.setIconResource(
                 if (isLiked) R.drawable.ic_heart_filled else R.drawable.ic_heart_outline
@@ -120,11 +178,10 @@ class PostAdapter(
         }
     }
 
-
     companion object {
-
         private const val VIEW_TYPE_HEADER = 0
         private const val VIEW_TYPE_POST = 1
     }
 }
+
 class HeaderViewHolder(view: View) : RecyclerView.ViewHolder(view)
