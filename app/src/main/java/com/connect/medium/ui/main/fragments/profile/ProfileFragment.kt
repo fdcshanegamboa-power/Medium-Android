@@ -1,6 +1,7 @@
 package com.connect.medium.ui.main.fragments.profile
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -53,9 +54,17 @@ class ProfileFragment : Fragment() {
 
         targetUid = if(args.uid.isNullOrEmpty()) viewModel.currentUid else args.uid!!
 
+        showShimmer(true)
+        showHeaderShimmer(true)
         setupRecyclerView()
         setupClickListeners()
         observeViewModel()
+
+        binding.shimmerLayout.post{
+            Log.d("DEBUG", "Shimmer width: ${binding.shimmerLayout.width}, height: ${binding.shimmerLayout.height}")
+            Log.d("DEBUG", "Shimmer visibility: ${binding.shimmerLayout.visibility}")
+            Log.d("DEBUG", "Shimmer child count: ${binding.shimmerLayout.childCount}")
+        }
 
         viewModel.loadUser(targetUid)
         viewModel.loadUserPosts(targetUid)
@@ -63,7 +72,6 @@ class ProfileFragment : Fragment() {
         if (targetUid != viewModel.currentUid) {
             viewModel.observeIsFollowing(targetUid)
             binding.toolbar.setNavigationIcon(R.drawable.ic_back)
-            // Set navigation icon tint to adapt to theme
             binding.toolbar.navigationIcon?.setTint(
                 ContextCompat.getColor(requireContext(), R.color.foreground)
             )
@@ -88,6 +96,29 @@ class ProfileFragment : Fragment() {
         }
 
     }
+    private fun showShimmer(show: Boolean) {
+        if (show) {
+            binding.shimmerLayout.visibility = View.VISIBLE
+            binding.shimmerLayout.startShimmer()
+            binding.rvPosts.visibility = View.GONE
+            binding.emptyState.visibility = View.GONE
+        } else {
+            binding.shimmerLayout.stopShimmer()
+            binding.shimmerLayout.visibility = View.GONE
+        }
+    }
+
+    private fun showHeaderShimmer(show: Boolean) {
+        if (show) {
+            binding.shimmerHeader.visibility = View.VISIBLE
+            binding.shimmerHeader.startShimmer()
+            binding.layoutProfileInfo.visibility = View.GONE
+        } else {
+            binding.shimmerHeader.stopShimmer()
+            binding.shimmerHeader.visibility = View.GONE
+            binding.layoutProfileInfo.visibility = View.VISIBLE
+        }
+    }
 
     private fun setupRecyclerView() {
         postGridAdapter = PostGridAdapter { post ->
@@ -106,7 +137,6 @@ class ProfileFragment : Fragment() {
                 viewModel.followUser(targetUid)
             }
         }
-
         binding.btnEditProfile.setOnClickListener {
             findNavController().navigate(R.id.action_profile_to_edit_profile)
         }
@@ -115,11 +145,15 @@ class ProfileFragment : Fragment() {
     private fun observeViewModel() {
         viewModel.userState.observe(viewLifecycleOwner) { resource ->
             when (resource) {
-                is Resource.Loading -> {}
-                is Resource.Success -> bindUser(resource.data)
-                is Resource.Error -> Toast.makeText(
-                    requireContext(), resource.message, Toast.LENGTH_SHORT
-                ).show()
+                is Resource.Loading -> showHeaderShimmer(true)
+                is Resource.Success -> {
+                    showHeaderShimmer(false)
+                    bindUser(resource.data)
+                }
+                is Resource.Error -> {
+                    showHeaderShimmer(false)
+                    Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
+                }
             }
         }
 
@@ -129,6 +163,7 @@ class ProfileFragment : Fragment() {
                 binding.tvPostCount.text = resource.data.size.toString()
 
                 if (resource.data.isEmpty()) {
+                    showShimmer(false)
                     binding.emptyState.visibility = View.VISIBLE
                     binding.rvPosts.visibility = View.GONE
 
@@ -142,7 +177,10 @@ class ProfileFragment : Fragment() {
                     }
                 } else {
                     binding.emptyState.visibility = View.GONE
-                    binding.rvPosts.visibility = View.VISIBLE
+                    binding.rvPosts.post {
+                        showShimmer(false)
+                        binding.rvPosts.visibility = View.VISIBLE
+                    }
                 }
             }
         }
@@ -159,15 +197,41 @@ class ProfileFragment : Fragment() {
         binding.tvFollowerCount.text = user.followerCount.toString()
         binding.tvFollowingCount.text = user.followingCount.toString()
 
-        if (user.bio.isNullOrEmpty()) {
-            binding.tvBio.visibility = View.GONE
-        } else {
-            binding.tvBio.visibility = View.VISIBLE
-        }
 
-        Glide.with(this)
+        binding.tvBio.visibility = if (user.bio.isNullOrEmpty()) View.GONE else View.VISIBLE
+
+        binding.ivProfileImage.visibility = View.INVISIBLE
+        Glide.with(binding.ivProfileImage.context)
             .load(user.profileImageUrl)
             .placeholder(R.drawable.ic_profile)
+            .error(R.drawable.ic_profile)
+            .circleCrop()
+            .listener(object : com.bumptech.glide.request.RequestListener<android.graphics.drawable.Drawable> {
+                override fun onResourceReady(
+                    resource: android.graphics.drawable.Drawable,
+                    model: Any,
+                    target: com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable>,
+                    dataSource: com.bumptech.glide.load.DataSource,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    // Check binding is still valid before touching views
+                    if (_binding != null) {
+                        binding.ivProfileImage.visibility = View.VISIBLE
+                    }
+                    return false
+                }
+                override fun onLoadFailed(
+                    e: com.bumptech.glide.load.engine.GlideException?,
+                    model: Any?,
+                    target: com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable>,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    if (_binding != null) {
+                        binding.ivProfileImage.visibility = View.VISIBLE
+                    }
+                    return false
+                }
+            })
             .into(binding.ivProfileImage)
 
         if (targetUid == viewModel.currentUid) {

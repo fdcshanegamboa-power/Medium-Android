@@ -24,43 +24,62 @@ class FirestoreDataSource {
     }
 
     suspend fun getUser(uid: String): User? {
-        return firestore.collection(Constants.COLLECTION_USERS)
-            .document(uid)
-            .get()
-            .await()
-            .toObject(User::class.java)
+
+        return try {
+            firestore.collection(Constants.COLLECTION_USERS)
+                .document(uid)
+                .get()
+                .await()
+                .toObject(User::class.java)
+        } catch(e: Exception) {
+            null
+        }
     }
 
     suspend fun updateUser(uid: String, fields: Map<String, Any>) {
-        firestore.collection(Constants.COLLECTION_USERS)
-            .document(uid)
-            .update(fields)
-            .await()
+        try {
+            firestore.collection(Constants.COLLECTION_USERS)
+                .document(uid)
+                .update(fields)
+                .await()
+        } catch (e: Exception) {
+            throw e // let repository handle it
+        }
     }
     suspend fun updateAuthorProfileImageOnPosts(uid: String, newImageUrl: String) {
-        val snapshot = firestore.collection(Constants.COLLECTION_POSTS)
-            .whereEqualTo("authorUid", uid)
-            .get()
-            .await()
+        try {
+            val snapshot = firestore.collection(Constants.COLLECTION_POSTS)
+                .whereEqualTo("authorUid", uid)
+                .get()
+                .await()
 
-        val batch = firestore.batch()
-        snapshot.documents.forEach { doc ->
-            batch.update(doc.reference, "authorProfileImageUrl", newImageUrl)
-        }
-        if (snapshot.documents.isNotEmpty()) {
-            batch.commit().await()
+            val batch = firestore.batch()
+            snapshot.documents.forEach { doc ->
+                batch.update(doc.reference, "authorProfileImageUrl", newImageUrl)
+            }
+
+            if (snapshot.documents.isNotEmpty()) {
+                batch.commit().await()
+            }
+        } catch (e: Exception) {
+            // optional: log or ignore
         }
     }
 
     suspend fun searchUsers(query: String): List<User> {
-        val snapshot = firestore.collection(Constants.COLLECTION_USERS)
-            .orderBy("username")
-            .startAt(query)
-            .endAt(query + "\uf8ff")
-            .limit(20)
-            .get()
-            .await()
-        return snapshot.toObjects(User::class.java)
+        return try {
+            val snapshot = firestore.collection(Constants.COLLECTION_USERS)
+                .orderBy("username")
+                .startAt(query)
+                .endAt(query + "\uf8ff")
+                .limit(20)
+                .get()
+                .await()
+
+            snapshot.toObjects(User::class.java)
+        } catch (e: Exception) {
+            emptyList()
+        }
     }
 
     fun observeUser(uid: String): Flow<User?> = callbackFlow {
@@ -162,13 +181,17 @@ class FirestoreDataSource {
     }
 
     suspend fun isPostLikedByUser(postId: String, uid: String): Boolean {
-        return firestore.collection(Constants.COLLECTION_POSTS)
-            .document(postId)
-            .collection(Constants.COLLECTION_LIKES)
-            .document(uid)
-            .get()
-            .await()
-            .exists()
+        return try {
+            firestore.collection(Constants.COLLECTION_POSTS)
+                .document(postId)
+                .collection(Constants.COLLECTION_LIKES)
+                .document(uid)
+                .get()
+                .await()
+                .exists()
+        } catch (e: Exception) {
+            false
+        }
     }
 
     // ─── Comments ───────────────────────────────────────
@@ -189,27 +212,30 @@ class FirestoreDataSource {
     }
 
     suspend fun updateAuthorProfileImageOnComments(uid: String, newImageUrl: String) {
-        // get all posts first
-        val postsSnapshot = firestore.collection(Constants.COLLECTION_POSTS)
-            .get()
-            .await()
-
-        postsSnapshot.documents.forEach { postDoc ->
-            // check comments subcollection of each post
-            val commentsSnapshot = firestore.collection(Constants.COLLECTION_POSTS)
-                .document(postDoc.id)
-                .collection(Constants.COLLECTION_COMMENTS)
-                .whereEqualTo("authorUid", uid)
+        try {
+            val postsSnapshot = firestore.collection(Constants.COLLECTION_POSTS)
                 .get()
                 .await()
 
-            if (commentsSnapshot.documents.isNotEmpty()) {
-                val batch = firestore.batch()
-                commentsSnapshot.documents.forEach { doc ->
-                    batch.update(doc.reference, "authorProfileImageUrl", newImageUrl)
+            postsSnapshot.documents.forEach { postDoc ->
+
+                val commentsSnapshot = firestore.collection(Constants.COLLECTION_POSTS)
+                    .document(postDoc.id)
+                    .collection(Constants.COLLECTION_COMMENTS)
+                    .whereEqualTo("authorUid", uid)
+                    .get()
+                    .await()
+
+                if (commentsSnapshot.documents.isNotEmpty()) {
+                    val batch = firestore.batch()
+                    commentsSnapshot.documents.forEach { doc ->
+                        batch.update(doc.reference, "authorProfileImageUrl", newImageUrl)
+                    }
+                    batch.commit().await()
                 }
-                batch.commit().await()
             }
+        } catch (e: Exception) {
+            // ignore or log
         }
     }
 
@@ -220,7 +246,7 @@ class FirestoreDataSource {
             .orderBy("createdAt", Query.Direction.ASCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
-                    close(error)
+                    trySend(emptyList()) // safer
                     return@addSnapshotListener
                 }
                 val comments = snapshot?.toObjects(Comment::class.java) ?: emptyList()
@@ -289,29 +315,38 @@ class FirestoreDataSource {
     }
 
     suspend fun markAllNotificationsAsRead(uid: String) {
-        val snapshot = firestore.collection(Constants.COLLECTION_NOTIFICATIONS)
-            .whereEqualTo("toUid", uid)
-            .whereEqualTo("read", false)
-            .get()
-            .await()
+        try {
+            val snapshot = firestore.collection(Constants.COLLECTION_NOTIFICATIONS)
+                .whereEqualTo("toUid", uid)
+                .whereEqualTo("read", false)
+                .get()
+                .await()
 
-        val batch = firestore.batch()
-        snapshot.documents.forEach { doc ->
-            batch.update(doc.reference, "read", true)
-        }
-        if (snapshot.documents.isNotEmpty()) {
-            batch.commit().await()
+            val batch = firestore.batch()
+            snapshot.documents.forEach { doc ->
+                batch.update(doc.reference, "read", true)
+            }
+
+            if (snapshot.documents.isNotEmpty()) {
+                batch.commit().await()
+            }
+        } catch (e: Exception) {
+            // ignore
         }
     }
 
     suspend fun isFollowingUser(currentUid: String, targetUid: String): Boolean {
-        return firestore.collection(Constants.COLLECTION_USERS)
-            .document(currentUid)
-            .collection(Constants.COLLECTION_FOLLOWING)
-            .document(targetUid)
-            .get()
-            .await()
-            .exists()
+        return try {
+            firestore.collection(Constants.COLLECTION_USERS)
+                .document(currentUid)
+                .collection(Constants.COLLECTION_FOLLOWING)
+                .document(targetUid)
+                .get()
+                .await()
+                .exists()
+        } catch (e: Exception) {
+            false
+        }
     }
 
     suspend fun sendNotification(notification: Notification) {
@@ -336,11 +371,16 @@ class FirestoreDataSource {
         awaitClose { listener.remove() }
     }
     suspend fun getFollowingList(currentUid: String): List<String> {
-        val snapshot = firestore.collection(Constants.COLLECTION_USERS)
-            .document(currentUid)
-            .collection(Constants.COLLECTION_FOLLOWING)
-            .get()
-            .await()
-        return snapshot.documents.map { it.id }
+        return try {
+            val snapshot = firestore.collection(Constants.COLLECTION_USERS)
+                .document(currentUid)
+                .collection(Constants.COLLECTION_FOLLOWING)
+                .get()
+                .await()
+
+            snapshot.documents.map { it.id }
+        } catch (e: Exception) {
+            emptyList()
+        }
     }
 }

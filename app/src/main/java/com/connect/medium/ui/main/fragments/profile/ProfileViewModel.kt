@@ -13,6 +13,7 @@ import com.connect.medium.data.repository.AuthRepository
 import com.connect.medium.data.repository.PostRepository
 import com.connect.medium.data.repository.UserRepository
 import com.connect.medium.utils.Resource
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -44,22 +45,27 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     val isFollowing: LiveData<Boolean> = _isFollowing
 
     fun loadUser(uid: String) {
+        _userState.value = Resource.Loading
         viewModelScope.launch {
+            val minDelay = launch { kotlinx.coroutines.delay(600) }
             userRepository.observeUser(uid)
                 .collect { user ->
-                    if (user != null) {
-                        _userState.value = Resource.Success(user)
-                    } else {
-                        _userState.value = Resource.Error("User not found")
-                    }
+                    minDelay.join()
+                    _userState.value = if (user != null)
+                        Resource.Success(user)
+                    else
+                        Resource.Error("User not found")
                 }
         }
     }
 
     fun loadUserPosts(uid: String) {
+        _postsState.value = Resource.Loading
         viewModelScope.launch {
+            val minDelay = launch { delay(800) }
             postRepository.observeUserPosts(uid)
                 .collect { posts ->
+                    minDelay.join()
                     _postsState.value = Resource.Success(posts)
                 }
         }

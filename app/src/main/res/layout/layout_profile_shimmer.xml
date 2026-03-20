@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.facebook.shimmer.ShimmerFrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/shimmer_profile"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:shimmer_colored="true"
+    app:shimmer_base_color="@color/muted"
+    app:shimmer_highlight_color="@color/surface"
+    app:shimmer_duration="1000">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Profile pic + stats row -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <!-- Avatar -->
+            <View
+                android:id="@+id/skeleton_avatar"
+                android:layout_width="86dp"
+                android:layout_height="86dp"
+                android:background="@drawable/shimmer_circle"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"/>
+
+            <!-- Post count block -->
+            <LinearLayout
+                android:id="@+id/skeleton_posts"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                app:layout_constraintTop_toTopOf="@id/skeleton_avatar"
+                app:layout_constraintBottom_toBottomOf="@id/skeleton_avatar"
+                app:layout_constraintStart_toEndOf="@id/skeleton_avatar"
+                app:layout_constraintEnd_toStartOf="@id/skeleton_followers">
+
+                <View
+                    android:layout_width="32dp"
+                    android:layout_height="14dp"
+                    android:background="@drawable/shimmer_bg"/>
+
+                <View
+                    android:layout_width="40dp"
+                    android:layout_height="10dp"
+                    android:background="@drawable/shimmer_bg"
+                    android:layout_marginTop="4dp"/>
+
+            </LinearLayout>
+
+            <!-- Followers count block -->
+            <LinearLayout
+                android:id="@+id/skeleton_followers"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                app:layout_constraintTop_toTopOf="@id/skeleton_avatar"
+                app:layout_constraintBottom_toBottomOf="@id/skeleton_avatar"
+                app:layout_constraintStart_toEndOf="@id/skeleton_posts"
+                app:layout_constraintEnd_toStartOf="@id/skeleton_following">
+
+                <View
+                    android:layout_width="32dp"
+                    android:layout_height="14dp"
+                    android:background="@drawable/shimmer_bg"/>
+
+                <View
+                    android:layout_width="50dp"
+                    android:layout_height="10dp"
+                    android:background="@drawable/shimmer_bg"
+                    android:layout_marginTop="4dp"/>
+
+            </LinearLayout>
+
+            <!-- Following count block -->
+            <LinearLayout
+                android:id="@+id/skeleton_following"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                app:layout_constraintTop_toTopOf="@id/skeleton_avatar"
+                app:layout_constraintBottom_toBottomOf="@id/skeleton_avatar"
+                app:layout_constraintStart_toEndOf="@id/skeleton_followers"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <View
+                    android:layout_width="32dp"
+                    android:layout_height="14dp"
+                    android:background="@drawable/shimmer_bg"/>
+
+                <View
+                    android:layout_width="50dp"
+                    android:layout_height="10dp"
+                    android:background="@drawable/shimmer_bg"
+                    android:layout_marginTop="4dp"/>
+
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Display name -->
+        <View
+            android:layout_width="140dp"
+            android:layout_height="12dp"
+            android:background="@drawable/shimmer_bg"
+            android:layout_marginTop="16dp"/>
+
+        <!-- Bio line 1 -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="10dp"
+            android:background="@drawable/shimmer_bg"
+            android:layout_marginTop="8dp"/>
+
+        <!-- Bio line 2 -->
+        <View
+            android:layout_width="200dp"
+            android:layout_height="10dp"
+            android:background="@drawable/shimmer_bg"
+            android:layout_marginTop="6dp"/>
+
+        <!-- Button -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:background="@drawable/shimmer_bg"
+            android:layout_marginTop="16dp"/>
+
+        <!-- Grid skeleton -->
+        <androidx.gridlayout.widget.GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:columnCount="3"
+            app:rowCount="2">
+
+            <View android:layout_width="0dp" android:layout_height="120dp"
+                android:background="@color/muted" android:layout_margin="1dp"
+                app:layout_columnWeight="1"/>
+            <View android:layout_width="0dp" android:layout_height="120dp"
+                android:background="@color/muted" android:layout_margin="1dp"
+                app:layout_columnWeight="1"/>
+            <View android:layout_width="0dp" android:layout_height="120dp"
+                android:background="@color/muted" android:layout_margin="1dp"
+                app:layout_columnWeight="1"/>
+            <View android:layout_width="0dp" android:layout_height="120dp"
+                android:background="@color/muted" android:layout_margin="1dp"
+                app:layout_columnWeight="1"/>
+            <View android:layout_width="0dp" android:layout_height="120dp"
+                android:background="@color/muted" android:layout_margin="1dp"
+                app:layout_columnWeight="1"/>
+            <View android:layout_width="0dp" android:layout_height="120dp"
+                android:background="@color/muted" android:layout_margin="1dp"
+                app:layout_columnWeight="1"/>
+
+        </androidx.gridlayout.widget.GridLayout>
+
+    </LinearLayout>
+
+</com.facebook.shimmer.ShimmerFrameLayout>

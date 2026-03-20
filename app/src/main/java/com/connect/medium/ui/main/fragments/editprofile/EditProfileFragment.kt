@@ -84,7 +84,7 @@ class EditProfileFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        showShimmer(true)
         // Set navigation icon tint to adapt to theme
         binding.toolbar.navigationIcon?.setTint(
             ContextCompat.getColor(requireContext(), R.color.foreground)
@@ -94,6 +94,17 @@ class EditProfileFragment : Fragment() {
         observeViewModel()
     }
 
+    private fun showShimmer(show: Boolean) {
+        if (show) {
+            binding.shimmerContainer.shimmerEditProfile.visibility = View.VISIBLE
+            binding.shimmerContainer.shimmerEditProfile.startShimmer()
+            binding.contentLayout.visibility = View.GONE
+        } else {
+            binding.shimmerContainer.shimmerEditProfile.stopShimmer()
+            binding.shimmerContainer.shimmerEditProfile.visibility = View.GONE
+            binding.contentLayout.visibility = View.VISIBLE
+        }
+    }
     private fun setupClickListeners() {
         binding.toolbar.setNavigationOnClickListener {
             findNavController().popBackStack()
@@ -168,6 +179,7 @@ class EditProfileFragment : Fragment() {
     private fun observeViewModel() {
         viewModel.userState.observe(viewLifecycleOwner) { resource ->
             if (resource is Resource.Success) {
+                showShimmer(false)
                 val user = resource.data
                 binding.etDisplayName.setText(user.displayName)
                 binding.etBio.setText(user.bio)

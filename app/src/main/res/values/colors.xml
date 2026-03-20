@@ -51,4 +51,9 @@
     <color name="white">#FFFFFFFF</color>
     <color name="gray">#808080</color>
 
+    <!-- Skeleton Colors -->
+    <!-- Skeleton / Shimmer -->
+    <color name="skeleton_base">#E0D4F5</color>
+    <color name="skeleton_highlight">#EDE8FA</color>
+
 </resources>

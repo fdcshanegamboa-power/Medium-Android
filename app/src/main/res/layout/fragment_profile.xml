@@ -12,7 +12,7 @@
         android:background="@color/background"
         app:elevation="0dp">
 
-        <!-- Toolbar with username -->
+        <!-- Toolbar -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
@@ -31,13 +31,30 @@
 
         </androidx.appcompat.widget.Toolbar>
 
-        <!-- Profile info — not collapsing, stays visible -->
+        <!-- Header shimmer — visible by default -->
+        <com.facebook.shimmer.ShimmerFrameLayout
+            android:id="@+id/shimmer_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:shimmer_colored="true"
+            app:shimmer_base_color="@color/skeleton_base"
+            app:shimmer_highlight_color="@color/skeleton_highlight"
+            app:shimmer_duration="1000"
+            android:visibility="visible">
+
+            <include layout="@layout/item_profile_header_skeleton"/>
+
+        </com.facebook.shimmer.ShimmerFrameLayout>
+
+        <!-- Real profile info — hidden until data loads -->
         <LinearLayout
+            android:id="@+id/layout_profile_info"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="16dp"
-            android:background="@color/background">
+            android:background="@color/background"
+            android:visibility="gone">
 
             <!-- Profile pic + stats row -->
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -177,22 +194,23 @@
                 android:maxLines="3"
                 android:layout_marginTop="2dp"/>
 
-            <!-- Edit Profile / Follow button -->
+            <!-- Edit Profile button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_edit_profile"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="match_parent"
-                android:layout_height="36dp"
+                android:layout_height="42dp"
                 android:text="Edit Profile"
                 android:textSize="13sp"
                 android:fontFamily="@font/instagram_sans"
                 android:visibility="gone"
                 android:layout_marginTop="12dp"/>
 
+            <!-- Follow button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_follow"
                 android:layout_width="match_parent"
-                android:layout_height="36dp"
+                android:layout_height="42dp"
                 android:text="Follow"
                 android:textSize="13sp"
                 android:fontFamily="@font/instagram_sans"
@@ -209,20 +227,35 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Posts Grid -->
+    <!-- Posts Grid — unchanged -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
+        <com.facebook.shimmer.ShimmerFrameLayout
+            android:id="@+id/shimmer_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:shimmer_colored="true"
+            app:shimmer_base_color="@color/skeleton_base"
+            app:shimmer_highlight_color="@color/skeleton_highlight"
+            app:shimmer_duration="1000"
+            app:layout_constraintTop_toTopOf="parent"
+            android:visibility="visible">
+
+            <include layout="@layout/item_profile_grid_skeleton"/>
+
+        </com.facebook.shimmer.ShimmerFrameLayout>
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_posts"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:visibility="gone"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"/>
 
-        <!-- Empty State -->
         <LinearLayout
             android:id="@+id/empty_state"
             android:layout_width="wrap_content"
@@ -262,7 +295,6 @@
                 android:gravity="center"
                 android:layout_marginTop="6dp"/>
 
-            <!-- Only show on own profile -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_create_first_post"
                 android:layout_width="wrap_content"

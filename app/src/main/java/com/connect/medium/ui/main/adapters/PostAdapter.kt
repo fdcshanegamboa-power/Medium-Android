@@ -11,6 +11,7 @@ import com.connect.medium.data.model.Post
 import com.connect.medium.databinding.ItemPostBinding
 import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 
 
 @UnstableApi
@@ -140,18 +141,38 @@ class PostAdapter(
             }
             binding.tvCommentCount.setOnClickListener { onCommentClick(post) }
 
-            android.util.Log.d("GlideDebug", "Loading profile image: '${post.authorProfileImageUrl}'")
-
             if (post.authorProfileImageUrl.isNotEmpty()) {
+                binding.ivProfileImage.visibility = View.INVISIBLE // hide until loaded
                 Glide.with(binding.root)
                     .load(post.authorProfileImageUrl)
                     .placeholder(R.drawable.ic_profile)
                     .error(R.drawable.ic_profile)
-                    .diskCacheStrategy(DiskCacheStrategy.NONE)
-                    .skipMemoryCache(true)
                     .circleCrop()
+                    .transition(DrawableTransitionOptions.withCrossFade(200))
+                    .listener(object : com.bumptech.glide.request.RequestListener<android.graphics.drawable.Drawable> {
+                        override fun onResourceReady(
+                            resource: android.graphics.drawable.Drawable,
+                            model: Any,
+                            target: com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable>,
+                            dataSource: com.bumptech.glide.load.DataSource,
+                            isFirstResource: Boolean
+                        ): Boolean {
+                            binding.ivProfileImage.visibility = View.VISIBLE
+                            return false // let Glide handle setting the image
+                        }
+                        override fun onLoadFailed(
+                            e: com.bumptech.glide.load.engine.GlideException?,
+                            model: Any?,
+                            target: com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable>,
+                            isFirstResource: Boolean
+                        ): Boolean {
+                            binding.ivProfileImage.visibility = View.VISIBLE
+                            return false // let Glide show the error drawable
+                        }
+                    })
                     .into(binding.ivProfileImage)
             } else {
+                binding.ivProfileImage.visibility = View.VISIBLE
                 binding.ivProfileImage.setImageResource(R.drawable.ic_profile)
             }
 

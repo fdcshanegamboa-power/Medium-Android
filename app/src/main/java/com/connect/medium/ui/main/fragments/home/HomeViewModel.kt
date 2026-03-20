@@ -46,8 +46,11 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     fun loadFeed() {
         _postsState.value = Resource.Loading
         viewModelScope.launch {
+            val minDelay = launch { kotlinx.coroutines.delay(800) }
+
             postRepository.observeFeedPosts()
                 .collect { posts ->
+                    minDelay.join() // wait for at least 800ms before showing data
                     _postsState.value = Resource.Success(posts)
                 }
         }

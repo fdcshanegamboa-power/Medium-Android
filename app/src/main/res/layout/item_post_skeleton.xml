@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="12dp">
+
+    <!-- Avatar -->
+    <View
+        android:id="@+id/skeleton_avatar"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:background="@drawable/shimmer_circle"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <!-- Username bar -->
+    <View
+        android:id="@+id/skeleton_username"
+        android:layout_width="120dp"
+        android:layout_height="12dp"
+        android:background="@drawable/shimmer_bg"
+        android:layout_marginStart="10dp"
+        app:layout_constraintTop_toTopOf="@id/skeleton_avatar"
+        app:layout_constraintBottom_toBottomOf="@id/skeleton_avatar"
+        app:layout_constraintStart_toEndOf="@id/skeleton_avatar"/>
+
+    <!-- Timestamp bar (next to username) -->
+    <View
+        android:id="@+id/skeleton_time"
+        android:layout_width="48dp"
+        android:layout_height="10dp"
+        android:background="@drawable/shimmer_bg"
+        android:layout_marginStart="8dp"
+        app:layout_constraintTop_toTopOf="@id/skeleton_avatar"
+        app:layout_constraintBottom_toBottomOf="@id/skeleton_avatar"
+        app:layout_constraintStart_toEndOf="@id/skeleton_username"/>
+
+    <!-- Media block -->
+    <View
+        android:id="@+id/skeleton_media"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="@color/skeleton_base"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/skeleton_avatar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintDimensionRatio="1:1"/>
+
+    <!-- Like button -->
+    <View
+        android:id="@+id/skeleton_like"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:background="@drawable/shimmer_circle"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintTop_toBottomOf="@id/skeleton_media"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <!-- Comment button -->
+    <View
+        android:id="@+id/skeleton_comment"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:background="@drawable/shimmer_circle"
+        android:layout_marginStart="10dp"
+        app:layout_constraintTop_toTopOf="@id/skeleton_like"
+        app:layout_constraintStart_toEndOf="@id/skeleton_like"/>
+
+    <!-- Like count -->
+    <View
+        android:id="@+id/skeleton_like_count"
+        android:layout_width="90dp"
+        android:layout_height="10dp"
+        android:background="@drawable/shimmer_bg"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintTop_toBottomOf="@id/skeleton_like"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <!-- Caption line 1 — full width -->
+    <View
+        android:id="@+id/skeleton_caption1"
+        android:layout_width="0dp"
+        android:layout_height="10dp"
+        android:background="@drawable/shimmer_bg"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/skeleton_like_count"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Caption line 2 — shorter -->
+    <View
+        android:id="@+id/skeleton_caption2"
+        android:layout_width="0dp"
+        android:layout_height="10dp"
+        android:background="@drawable/shimmer_bg"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="80dp"
+        android:layout_marginTop="6dp"
+        app:layout_constraintTop_toBottomOf="@id/skeleton_caption1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Timestamp -->
+    <View
+        android:id="@+id/skeleton_timestamp"
+        android:layout_width="55dp"
+        android:layout_height="8dp"
+        android:background="@drawable/shimmer_bg"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/skeleton_caption2"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

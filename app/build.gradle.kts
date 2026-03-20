@@ -137,5 +137,12 @@ dependencies {
     //dots indicator for pager multiple medias
     implementation("com.tbuonomo:dotsindicator:5.1.0")
 
+    //Shimmer
+    implementation("com.facebook.shimmer:shimmer:0.5.0")
+
+    //gridlayout
+    implementation("androidx.gridlayout:gridlayout:1.1.0")
+
+
 
 }

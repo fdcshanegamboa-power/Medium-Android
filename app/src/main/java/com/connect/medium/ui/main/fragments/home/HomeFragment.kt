@@ -57,6 +57,18 @@ class HomeFragment : Fragment() {
         }
     }
 
+    private fun showShimmer(show: Boolean) {
+        if (show) {
+            binding.shimmerLayout.visibility = View.VISIBLE
+            binding.shimmerLayout.startShimmer()
+            binding.rvFeed.visibility = View.GONE
+            binding.emptyState.visibility = View.GONE
+        } else {
+            binding.shimmerLayout.stopShimmer()
+            binding.shimmerLayout.visibility = View.GONE
+        }
+    }
+
     private fun setupRecyclerView() {
         postAdapter = PostAdapter(
             onLikeClick = { post ->
@@ -80,23 +92,38 @@ class HomeFragment : Fragment() {
     private fun observeViewModel(){
         viewModel.postsState.observe(viewLifecycleOwner){ resource ->
             when(resource){
-                is Resource.Loading -> binding.swipeRefresh.isRefreshing = true
+                is Resource.Loading -> {
+                    showShimmer(true)
+                    binding.swipeRefresh.isRefreshing = false
+                }
                 is Resource.Success -> {
                     binding.swipeRefresh.isRefreshing = false
-                    binding.swipeRefresh.isRefreshing = false
                     if (resource.data.isEmpty()) {
+                        showShimmer(false)
                         binding.emptyState.visibility = View.VISIBLE
                         binding.rvFeed.visibility = View.GONE
                     } else {
                         binding.emptyState.visibility = View.GONE
-                        binding.rvFeed.visibility = View.VISIBLE
                         postAdapter.submitList(resource.data)
                         viewModel.checkLikedPosts(resource.data.map { it.postId })
+
+                        // Wait for the RecyclerView to actually lay out before hiding shimmer
+                        binding.rvFeed.post {
+                            showShimmer(false)
+                            binding.rvFeed.visibility = View.VISIBLE
+                        }
                     }
                 }
                 is Resource.Error -> {
                     binding.swipeRefresh.isRefreshing = false
-                    Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
+
+                    showShimmer(false)
+                    binding.rvFeed.visibility = View.GONE
+                    binding.emptyState.visibility = View.VISIBLE
+
+                    context?.let {
+                        Toast.makeText(it, resource.message, Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         }
@@ -109,6 +136,8 @@ class HomeFragment : Fragment() {
             }
         }
     }
+
+
 
     override fun onDestroyView() {
         binding.rvFeed.adapter = null
