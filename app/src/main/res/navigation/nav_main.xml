@@ -53,11 +53,20 @@
         <action
             android:id="@+id/action_profile_to_settings"
             app:destination="@id/settingsFragment"/>
+
+        <action
+            android:id="@+id/action_profile_to_edit_profile"
+            app:destination="@id/editProfileFragment"/>
     </fragment>
 
     <fragment
         android:id="@+id/settingsFragment"
         android:name="com.connect.medium.ui.main.fragments.settings.SettingsFragment"
         android:label="Settings"/>
+
+    <fragment
+        android:id="@+id/editProfileFragment"
+        android:name="com.connect.medium.ui.main.fragments.editprofile.EditProfileFragment"
+        android:label="Edit Profile"/>
 
 </navigation>

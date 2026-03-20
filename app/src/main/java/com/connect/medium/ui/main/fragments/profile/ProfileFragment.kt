@@ -103,7 +103,7 @@ class ProfileFragment : Fragment() {
         }
 
         binding.btnEditProfile.setOnClickListener {
-            // TODO: navigate to edit profile
+            findNavController().navigate(R.id.action_profile_to_edit_profile)
         }
     }
 

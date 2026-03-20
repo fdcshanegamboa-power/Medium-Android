@@ -12,35 +12,43 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:navGraph="@navigation/nav_main"
-        app:defaultNavHost="true"/>
+        app:defaultNavHost="true" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/bottom_bar_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
         android:paddingHorizontal="12dp"
-        android:paddingBottom="12dp">
+        android:paddingBottom="12dp"
+        app:layout_anchorGravity="bottom"
+        android:layout_gravity="bottom">
 
+        <!-- Bottom Navigation -->
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottom_nav"
-            app:itemTextAppearanceActive="@style/NavLabelTextAppearance"
-            app:itemTextAppearanceInactive="@style/NavLabelTextAppearance"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="72dp"
+            android:background="@drawable/bg_bottom_nav"
             android:paddingStart="2dp"
             android:paddingEnd="2dp"
             android:paddingTop="4dp"
-            android:background="@drawable/bg_bottom_nav"
+            app:itemPaddingBottom="8dp"
+            app:itemIconSize="26dp"
+
+
             app:menu="@menu/bottom_nav_menu"
             app:itemIconTint="@color/nav_item_selector"
             app:itemTextColor="@color/nav_item_selector"
+            app:itemTextAppearanceActive="@style/NavLabelTextAppearance"
+            app:itemTextAppearanceInactive="@style/NavLabelTextAppearance"
             app:itemActiveIndicatorStyle="@style/NavActiveIndicator"
             app:labelVisibilityMode="labeled"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
 
-        <!-- FAB centered above nav -->
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <!-- Floating Action Button -->
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab_create"
             android:layout_width="56dp"
@@ -51,10 +59,12 @@
             app:fabSize="normal"
             app:shapeAppearanceOverlay="@style/FabCircle"
             app:elevation="12dp"
+
             app:layout_constraintBottom_toTopOf="@id/bottom_nav"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginBottom="-28dp"/>
+
+            android:translationY="28dp" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
