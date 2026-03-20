@@ -55,6 +55,13 @@ class UserRepository(
     suspend fun updateUser(uid: String, fields: Map<String, Any>): Resource<Unit> {
         return try {
             firestoreDataSource.updateUser(uid, fields)
+
+            val newImageUrl = fields["profileImageUrl"] as? String
+            if (newImageUrl != null) {
+                firestoreDataSource.updateAuthorProfileImageOnPosts(uid, newImageUrl)
+            }
+            val updatedUser = firestoreDataSource.getUser(uid)
+            updatedUser?.let { userDao.insertUser(it.toEntity()) }
             Resource.Success(Unit)
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Failed to update user")

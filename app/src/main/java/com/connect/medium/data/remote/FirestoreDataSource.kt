@@ -37,6 +37,20 @@ class FirestoreDataSource {
             .update(fields)
             .await()
     }
+    suspend fun updateAuthorProfileImageOnPosts(uid: String, newImageUrl: String) {
+        val snapshot = firestore.collection(Constants.COLLECTION_POSTS)
+            .whereEqualTo("authorUid", uid)
+            .get()
+            .await()
+
+        val batch = firestore.batch()
+        snapshot.documents.forEach { doc ->
+            batch.update(doc.reference, "authorProfileImageUrl", newImageUrl)
+        }
+        if (snapshot.documents.isNotEmpty()) {
+            batch.commit().await()
+        }
+    }
 
     suspend fun searchUsers(query: String): List<User> {
         val snapshot = firestore.collection(Constants.COLLECTION_USERS)

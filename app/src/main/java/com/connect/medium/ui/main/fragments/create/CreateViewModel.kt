@@ -2,6 +2,7 @@ package com.connect.medium.ui.main.fragments.create
 
 import android.app.Application
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -61,6 +62,16 @@ class CreatePostViewModel(application: Application) : AndroidViewModel(applicati
             _createPostState.value = Resource.Error("Please select an image")
             return
         }
+
+        val user = _currentUser.value
+        if (user == null) {
+            _createPostState.value = Resource.Error("User data not loaded yet, try again")
+            return
+        }
+
+        Log.d("CreatePost", "Author profile image: '${user.profileImageUrl}'")
+
+
         _createPostState.value = Resource.Loading
 
         viewModelScope.launch {

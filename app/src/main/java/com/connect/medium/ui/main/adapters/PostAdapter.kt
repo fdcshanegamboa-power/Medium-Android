@@ -10,6 +10,7 @@ import com.connect.medium.R
 import com.connect.medium.data.model.Post
 import com.connect.medium.databinding.ItemPostBinding
 import androidx.viewpager2.widget.ViewPager2
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 
 
 @UnstableApi
@@ -111,37 +112,71 @@ class PostAdapter(
 
         fun bind(post: Post) {
             binding.tvUsername.text = post.authorUsername
-            binding.tvCaption.text = post.caption
-            binding.tvLikeCount.text = post.likeCount.toString()
-            binding.tvCommentCount.text = post.commentCount.toString()
             binding.tvTimestamp.text = getRelativeTime(post.createdAt)
 
-            Glide.with(binding.root)
-                .load(post.authorProfileImageUrl)
-                .placeholder(R.drawable.ic_profile)
-                .circleCrop()
-                .into(binding.ivProfileImage)
+            // bold username + caption inline like Instagram
+            val captionText = android.text.SpannableStringBuilder()
+            val boldSpan = android.text.style.StyleSpan(android.graphics.Typeface.BOLD)
+            captionText.append(post.authorUsername)
+            captionText.setSpan(boldSpan, 0, post.authorUsername.length, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            if (post.caption.isNotEmpty()) {
+                captionText.append("  ${post.caption}")
+            }
+            binding.tvCaption.text = captionText
+
+            // like count
+            binding.tvLikeCount.text = when {
+                post.likeCount == 0 -> "Be the first to like this"
+                post.likeCount == 1 -> "1 like"
+                else -> "${post.likeCount} likes"
+            }
+
+            // comment count
+            binding.tvCommentCount.text = when {
+                post.commentCount == 0 -> ""
+                post.commentCount == 1 -> "View 1 comment"
+                else -> "View all ${post.commentCount} comments"
+            }
+
+            android.util.Log.d("GlideDebug", "Loading profile image: '${post.authorProfileImageUrl}'")
+
+            if (post.authorProfileImageUrl.isNotEmpty()) {
+                Glide.with(binding.root)
+                    .load(post.authorProfileImageUrl)
+                    .placeholder(R.drawable.ic_profile)
+                    .error(R.drawable.ic_profile)
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .skipMemoryCache(true)
+                    .circleCrop()
+                    .into(binding.ivProfileImage)
+            } else {
+                binding.ivProfileImage.setImageResource(R.drawable.ic_profile)
+            }
 
             binding.viewPagerMedia.offscreenPageLimit = 1
+
             pageChangeCallback?.let {
                 binding.viewPagerMedia.unregisterOnPageChangeCallback(it)
             }
             pageChangeCallback = null
-            (binding.viewPagerMedia.adapter as? PostMediaAdapter)?.let { oldAdapter ->
+
+            (binding.viewPagerMedia.adapter as? PostMediaAdapter)?.let {
                 val rv = binding.viewPagerMedia.getChildAt(0) as? RecyclerView
                 rv?.let { recyclerView ->
                     for (i in 0 until recyclerView.childCount) {
                         val holder = recyclerView.getChildViewHolder(recyclerView.getChildAt(i))
-                        when(holder) {
+                        when (holder) {
                             is PostMediaAdapter.VideoViewHolder -> holder.release()
                             is PostMediaAdapter.ImageViewHolder -> holder.clear()
                         }
                     }
                 }
             }
+
             binding.viewPagerMedia.adapter = null
             val mediaAdapter = PostMediaAdapter(post.mediaUrls, post.mediaTypes)
             binding.viewPagerMedia.adapter = mediaAdapter
+
             pageChangeCallback = object : ViewPager2.OnPageChangeCallback() {
                 override fun onPageSelected(position: Int) {
                     super.onPageSelected(position)
@@ -165,8 +200,9 @@ class PostAdapter(
                 binding.dotsIndicator.visibility = View.GONE
             }
 
+            // like button state — use ImageButton now
             val isLiked = likedPosts.contains(post.postId)
-            binding.btnLike.setIconResource(
+            binding.btnLike.setImageResource(
                 if (isLiked) R.drawable.ic_heart_filled else R.drawable.ic_heart_outline
             )
 
@@ -174,6 +210,9 @@ class PostAdapter(
             binding.btnComment.setOnClickListener { onCommentClick(post) }
             binding.ivProfileImage.setOnClickListener { onProfileClick(post.authorUid) }
             binding.tvUsername.setOnClickListener { onProfileClick(post.authorUid) }
+            binding.btnMore.setOnClickListener {
+                // TODO: show post options menu (delete, report, etc.)
+            }
         }
 
 

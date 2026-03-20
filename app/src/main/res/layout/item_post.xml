@@ -4,14 +4,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingBottom="8dp">
+    android:paddingBottom="12dp">
 
     <!-- Author Row -->
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/iv_profile_image"
         android:layout_width="36dp"
         android:layout_height="36dp"
-        android:layout_margin="12dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="10dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"/>
 
@@ -21,19 +22,38 @@
         android:layout_height="wrap_content"
         android:textStyle="bold"
         android:textSize="13sp"
+        android:textColor="@color/foreground"
+        android:fontFamily="@font/instagram_sans"
+        android:layout_marginStart="10dp"
         app:layout_constraintTop_toTopOf="@id/iv_profile_image"
         app:layout_constraintBottom_toBottomOf="@id/iv_profile_image"
         app:layout_constraintStart_toEndOf="@id/iv_profile_image"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginStart="8dp"/>
+        app:layout_constraintEnd_toStartOf="@id/btn_more"/>
 
-    <!-- Media ViewPager2 -->
+    <!-- 3 dot menu -->
+    <ImageButton
+        android:id="@+id/btn_more"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/ic_more_vert"
+        android:background="@android:color/transparent"
+        android:padding="8dp"
+        app:tint="@color/foreground"
+        app:layout_constraintTop_toTopOf="@id/iv_profile_image"
+        app:layout_constraintBottom_toBottomOf="@id/iv_profile_image"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="4dp"/>
+
+    <!-- Media ViewPager2 — full width, no margins -->
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/view_pager_media"
         android:layout_width="match_parent"
-        android:layout_height="350dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
         app:layout_constraintTop_toBottomOf="@id/iv_profile_image"
-        app:layout_constraintStart_toStartOf="parent"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintDimensionRatio="1:1"/>
 
     <!-- Dots Indicator -->
     <com.tbuonomo.viewpagerdotsindicator.DotsIndicator
@@ -47,44 +67,52 @@
         app:layout_constraintTop_toBottomOf="@id/view_pager_media"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="4dp"/>
+        android:layout_marginTop="6dp"/>
 
-    <!-- Action Buttons -->
-    <com.google.android.material.button.MaterialButton
+    <!-- Action Row -->
+    <ImageButton
         android:id="@+id/btn_like"
-        style="@style/Widget.MaterialComponents.Button.TextButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text=""
-        app:icon="@drawable/ic_heart_outline"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/ic_heart_outline"
+        android:background="@android:color/transparent"
+        android:padding="6dp"
+        android:layout_marginStart="8dp"
         app:layout_constraintTop_toBottomOf="@id/dots_indicator"
         app:layout_constraintStart_toStartOf="parent"/>
 
-    <com.google.android.material.button.MaterialButton
+    <ImageButton
         android:id="@+id/btn_comment"
-        style="@style/Widget.MaterialComponents.Button.TextButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text=""
-        app:icon="@drawable/ic_comment"
-        app:layout_constraintTop_toBottomOf="@id/dots_indicator"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/ic_comment"
+        android:background="@android:color/transparent"
+        android:padding="6dp"
+        app:layout_constraintTop_toTopOf="@id/btn_like"
+        app:layout_constraintBottom_toBottomOf="@id/btn_like"
         app:layout_constraintStart_toEndOf="@id/btn_like"/>
 
+    <!-- Like count -->
     <TextView
         android:id="@+id/tv_like_count"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textStyle="bold"
         android:textSize="13sp"
+        android:textStyle="bold"
+        android:textColor="@color/foreground"
+        android:fontFamily="@font/instagram_sans"
         android:layout_marginStart="12dp"
         app:layout_constraintTop_toBottomOf="@id/btn_like"
         app:layout_constraintStart_toStartOf="parent"/>
 
+    <!-- Caption — bold username inline -->
     <TextView
         android:id="@+id/tv_caption"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:textSize="13sp"
+        android:textColor="@color/foreground"
+        android:fontFamily="@font/instagram_sans"
         android:layout_marginStart="12dp"
         android:layout_marginEnd="12dp"
         android:layout_marginTop="4dp"
@@ -92,26 +120,31 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- View all comments -->
     <TextView
         android:id="@+id/tv_comment_count"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="12sp"
-        android:textColor="@color/gray"
+        android:textSize="13sp"
+        android:textColor="@color/muted_foreground"
+        android:fontFamily="@font/instagram_sans"
         android:layout_marginStart="12dp"
         android:layout_marginTop="4dp"
         app:layout_constraintTop_toBottomOf="@id/tv_caption"
         app:layout_constraintStart_toStartOf="parent"/>
 
+    <!-- Timestamp -->
     <TextView
         android:id="@+id/tv_timestamp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="11sp"
-        android:textColor="@color/gray"
+        android:textColor="@color/muted_foreground"
+        android:fontFamily="@font/instagram_sans"
+        android:textAllCaps="true"
         android:layout_marginStart="12dp"
         android:layout_marginTop="4dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginBottom="4dp"
         app:layout_constraintTop_toBottomOf="@id/tv_comment_count"
         app:layout_constraintStart_toStartOf="parent"/>
 
