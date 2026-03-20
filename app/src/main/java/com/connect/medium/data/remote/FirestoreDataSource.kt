@@ -188,6 +188,31 @@ class FirestoreDataSource {
         batch.commit().await()
     }
 
+    suspend fun updateAuthorProfileImageOnComments(uid: String, newImageUrl: String) {
+        // get all posts first
+        val postsSnapshot = firestore.collection(Constants.COLLECTION_POSTS)
+            .get()
+            .await()
+
+        postsSnapshot.documents.forEach { postDoc ->
+            // check comments subcollection of each post
+            val commentsSnapshot = firestore.collection(Constants.COLLECTION_POSTS)
+                .document(postDoc.id)
+                .collection(Constants.COLLECTION_COMMENTS)
+                .whereEqualTo("authorUid", uid)
+                .get()
+                .await()
+
+            if (commentsSnapshot.documents.isNotEmpty()) {
+                val batch = firestore.batch()
+                commentsSnapshot.documents.forEach { doc ->
+                    batch.update(doc.reference, "authorProfileImageUrl", newImageUrl)
+                }
+                batch.commit().await()
+            }
+        }
+    }
+
     fun observeComments(postId: String): Flow<List<Comment>> = callbackFlow {
         val listener = firestore.collection(Constants.COLLECTION_POSTS)
             .document(postId)

@@ -137,6 +137,7 @@ class PostAdapter(
                 post.commentCount == 1 -> "View 1 comment"
                 else -> "View all ${post.commentCount} comments"
             }
+            binding.tvCommentCount.setOnClickListener { onCommentClick(post) }
 
             android.util.Log.d("GlideDebug", "Loading profile image: '${post.authorProfileImageUrl}'")
 

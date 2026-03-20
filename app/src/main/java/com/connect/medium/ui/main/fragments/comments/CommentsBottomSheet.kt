@@ -110,9 +110,13 @@ class CommentsBottomSheet : BottomSheetDialogFragment() {
     private fun observeViewModel() {
         viewModel.commentsState.observe(viewLifecycleOwner) { resource ->
             if (resource is Resource.Success) {
-                commentAdapter.submitList(resource.data)
-                // scroll to bottom when new comment added
-                if (resource.data.isNotEmpty()) {
+                if (resource.data.isEmpty()) {
+                    binding.emptyState.visibility = View.VISIBLE
+                    binding.rvComments.visibility = View.GONE
+                } else {
+                    binding.emptyState.visibility = View.GONE
+                    binding.rvComments.visibility = View.VISIBLE
+                    commentAdapter.submitList(resource.data)
                     binding.rvComments.scrollToPosition(resource.data.size - 1)
                 }
             }

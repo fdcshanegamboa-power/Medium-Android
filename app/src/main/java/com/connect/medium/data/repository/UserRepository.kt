@@ -59,6 +59,7 @@ class UserRepository(
             val newImageUrl = fields["profileImageUrl"] as? String
             if (newImageUrl != null) {
                 firestoreDataSource.updateAuthorProfileImageOnPosts(uid, newImageUrl)
+                firestoreDataSource.updateAuthorProfileImageOnComments(uid, newImageUrl)
             }
             val updatedUser = firestoreDataSource.getUser(uid)
             updatedUser?.let { userDao.insertUser(it.toEntity()) }

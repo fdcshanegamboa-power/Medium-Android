@@ -1,5 +1,6 @@
 package com.connect.medium.ui.main.adapters
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -39,11 +40,17 @@ class CommentAdapter : RecyclerView.Adapter<CommentAdapter.CommentViewHolder>() 
             binding.tvComment.text = comment.text
             binding.tvTimestamp.text = getRelativeTime(comment.createdAt)
 
-            Glide.with(binding.root)
-                .load(comment.authorProfileImageUrl)
-                .placeholder(R.drawable.ic_profile)
-                .circleCrop()
-                .into(binding.ivProfileImage)
+            if (comment.authorProfileImageUrl.isNotEmpty()) {
+                Glide.with(binding.root)
+                    .load(comment.authorProfileImageUrl)
+                    .placeholder(R.drawable.ic_profile)
+                    .circleCrop()
+                    .into(binding.ivProfileImage)
+            } else {
+                binding.ivProfileImage.setImageResource(R.drawable.ic_profile)
+            }
+            Log.d("CommentAdapter", "Binding comment: ${comment.text} by ${comment.authorUsername} with profile url: ${comment.authorProfileImageUrl}")
+
         }
 
         private fun getRelativeTime(timestamp: Long): String {
