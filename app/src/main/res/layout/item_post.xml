@@ -32,13 +32,13 @@
 
     <!-- 3 dot menu -->
     <ImageButton
+        app:tint="@color/primary"
         android:id="@+id/btn_more"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:src="@drawable/ic_more_vert"
         android:background="@android:color/transparent"
         android:padding="8dp"
-        app:tint="@color/foreground"
         app:layout_constraintTop_toTopOf="@id/iv_profile_image"
         app:layout_constraintBottom_toBottomOf="@id/iv_profile_image"
         app:layout_constraintEnd_toEndOf="parent"
@@ -78,6 +78,7 @@
         android:background="@android:color/transparent"
         android:padding="6dp"
         android:layout_marginStart="8dp"
+        app:tint="@color/primary"
         app:layout_constraintTop_toBottomOf="@id/dots_indicator"
         app:layout_constraintStart_toStartOf="parent"/>
 
@@ -88,6 +89,8 @@
         android:src="@drawable/ic_comment"
         android:background="@android:color/transparent"
         android:padding="6dp"
+
+        app:tint="@color/primary"
         app:layout_constraintTop_toTopOf="@id/btn_like"
         app:layout_constraintBottom_toBottomOf="@id/btn_like"
         app:layout_constraintStart_toEndOf="@id/btn_like"/>

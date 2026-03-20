@@ -1,8 +1,10 @@
 package com.connect.medium.ui.main.adapters
 
+import android.app.Activity
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.DefaultLoadControl
@@ -60,9 +62,10 @@ class PostMediaAdapter(
             is VideoViewHolder -> holder.release()
             is ImageViewHolder -> holder.clear()
         }
-        if (holder is VideoViewHolder) {
-            holder.release()
-        }
+        // Remove duplicate call
+        // if (holder is VideoViewHolder) {
+        //     holder.release()
+        // }
     }
 
     override fun onViewDetachedFromWindow(holder: RecyclerView.ViewHolder) {
@@ -83,7 +86,23 @@ class PostMediaAdapter(
                 .into(binding.ivPostImage)
         }
         fun clear() {
-            Glide.with(binding.root).clear(binding.ivPostImage)
+            try {
+                val context = binding.root.context
+                when (context) {
+                    is Activity -> {
+                        // Check if activity is still valid
+                        if (!context.isDestroyed && !context.isFinishing) {
+                            Glide.with(context as Context).clear(binding.ivPostImage)
+                        }
+                    } else -> {
+                        // Fallback to application context
+                        Glide.with(context.applicationContext).clear(binding.ivPostImage)
+                    }
+                }
+            } catch (e: Exception) {
+                // Log but don't crash - activity is likely destroyed
+                e.printStackTrace()
+            }
         }
     }
 
@@ -95,7 +114,7 @@ class PostMediaAdapter(
         private var isMuted = false
 
         private fun createPlayer(context: Context): ExoPlayer {
-            return ExoPlayer.Builder(context.applicationContext)
+            return ExoPlayer.Builder(context.applicationContext) // Always use application context for ExoPlayer
                 .setLoadControl(
                     DefaultLoadControl.Builder()
                         .setBufferDurationsMs(
@@ -118,7 +137,7 @@ class PostMediaAdapter(
             binding.btnMute.setImageResource(R.drawable.ic_volume_on)
             binding.btnPlayPause.setImageResource(R.drawable.ic_play)
 
-            // Use createPlayer() instead of direct ExoPlayer.Builder
+            // Use application context for ExoPlayer to avoid leaks
             player = createPlayer(binding.root.context).apply {
                 setMediaItem(MediaItem.fromUri(url))
                 repeatMode = ExoPlayer.REPEAT_MODE_OFF
@@ -129,6 +148,7 @@ class PostMediaAdapter(
 
             binding.playerView.player = player
 
+            // Clear previous listeners first
             binding.btnPlayPause.setOnClickListener(null)
             binding.btnMute.setOnClickListener(null)
 
@@ -155,7 +175,6 @@ class PostMediaAdapter(
             }
         }
 
-
         fun pause() {
             player?.pause()
             binding.btnPlayPause.setImageResource(R.drawable.ic_play)
@@ -169,12 +188,15 @@ class PostMediaAdapter(
             binding.playerView.player = null
 
             player?.let { p ->
-                p.stop()
-                p.clearMediaItems()
-                p.release()
+                try {
+                    p.stop()
+                    p.clearMediaItems()
+                    p.release()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
             }
             player = null
         }
     }
-
 }

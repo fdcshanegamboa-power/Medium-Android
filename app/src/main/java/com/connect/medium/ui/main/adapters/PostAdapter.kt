@@ -114,7 +114,8 @@ class PostAdapter(
             binding.tvUsername.text = post.authorUsername
             binding.tvTimestamp.text = getRelativeTime(post.createdAt)
 
-            // bold username + caption inline like Instagram
+            binding.tvUsername.setOnClickListener { onProfileClick(post.authorUid) }
+
             val captionText = android.text.SpannableStringBuilder()
             val boldSpan = android.text.style.StyleSpan(android.graphics.Typeface.BOLD)
             captionText.append(post.authorUsername)
