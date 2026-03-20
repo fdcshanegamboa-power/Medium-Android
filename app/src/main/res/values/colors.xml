@@ -40,9 +40,10 @@
     <color name="success">#4CAF50</color>
 
     <!-- Bottom Nav -->
-    <color name="nav_background">#1C1C1C</color>
-    <color name="nav_item_active">#8B5CF6</color>
-    <color name="nav_item_inactive">#9E9E9E</color>
+    <!-- Bottom Nav -->
+    <color name="nav_background">#FFFFFF</color>
+    <color name="nav_item_active">#7C3AED</color>
+    <color name="nav_item_inactive">#AB7AFF</color>
     <color name="nav_fab">#7C3AED</color>
 
     <!-- Utility -->
