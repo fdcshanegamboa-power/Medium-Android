@@ -36,9 +36,6 @@
             android:id="@+id/shimmer_header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:shimmer_colored="true"
-            app:shimmer_base_color="@color/skeleton_base"
-            app:shimmer_highlight_color="@color/skeleton_highlight"
             app:shimmer_duration="1000"
             android:visibility="visible">
 
