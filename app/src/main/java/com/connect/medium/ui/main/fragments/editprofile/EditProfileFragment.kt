@@ -84,6 +84,12 @@ class EditProfileFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Set navigation icon tint to adapt to theme
+        binding.toolbar.navigationIcon?.setTint(
+            ContextCompat.getColor(requireContext(), R.color.foreground)
+        )
+
         setupClickListeners()
         observeViewModel()
     }

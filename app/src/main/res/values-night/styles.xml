@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Connect" parent="Base.Theme.Connect"/>
+
+    <style name="FabCircle">
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="NavActiveIndicator">
+        <item name="android:color">@android:color/transparent</item>
+        <item name="shapeAppearance">@style/NavIndicatorShape</item>
+    </style>
+
+    <style name="NavIndicatorShape">
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="NavLabelTextAppearance" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:fontFamily">@font/instagram_sans</item>
+        <item name="android:textSize">10sp</item>
+    </style>
+
+    <style name="ToolbarTitle" parent="TextAppearance.MaterialComponents.Headline6">
+        <item name="android:fontFamily">@font/instagram_sans</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/foreground</item>
+    </style>
+
+    <style name="ToolbarTheme" parent="ThemeOverlay.MaterialComponents.Toolbar.Primary">
+        <item name="colorControlNormal">@color/foreground</item>
+        <item name="android:textColorPrimary">@color/foreground</item>
+        <item name="titleTextColor">@color/foreground</item>
+    </style>
+
+</resources>

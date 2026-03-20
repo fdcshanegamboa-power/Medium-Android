@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Brand Purple — inverted for dark -->
+    <color name="purple_50">#2E1065</color>
+    <color name="purple_100">#3D1D8A</color>
+    <color name="purple_200">#4C1D95</color>
+    <color name="purple_300">#5B21B6</color>
+    <color name="purple_400">#7C3AED</color>
+    <color name="purple_500">#8B5CF6</color>
+    <color name="purple_600">#A87FFF</color>
+    <color name="purple_700">#C9AAFF</color>
+    <color name="purple_800">#E4D4FF</color>
+    <color name="purple_900">#F3EEFF</color>
+
+    <!-- Semantic -->
+    <color name="primary">#8B5CF6</color>
+    <color name="primary_variant">#7C3AED</color>
+    <color name="primary_foreground">#FFFFFF</color>
+
+    <color name="secondary">#2A1F3D</color>
+    <color name="secondary_foreground">#C9AAFF</color>
+
+    <!-- Background / Surface -->
+    <color name="background">#121212</color>
+    <color name="surface">#1E1E1E</color>
+    <color name="surface_variant">#2A1F3D</color>
+
+    <!-- Foreground / Text -->
+    <color name="foreground">#F5F5F5</color>
+    <color name="muted_foreground">#A0A0A0</color>
+
+    <!-- Border / Input -->
+    <color name="border">#3D2F6B</color>
+    <color name="input">#1E1E1E</color>
+    <color name="muted">#2A2A2A</color>
+
+    <!-- States -->
+    <color name="error">#FF6B6B</color>
+    <color name="success">#66BB6A</color>
+
+    <!-- Bottom Nav -->
+    <color name="nav_background">#1E1E1E</color>
+    <color name="nav_item_active">#A87FFF</color>
+    <color name="nav_item_inactive">#888888</color>
+    <color name="nav_fab">#7C3AED</color>
+
+    <!-- Utility -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="gray">#606060</color>
+
+
+</resources>

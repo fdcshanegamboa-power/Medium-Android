@@ -6,14 +6,19 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.connect.medium.R
 import com.connect.medium.databinding.FragmentSettingsBinding
 import com.connect.medium.ui.auth.AuthActivity
 import com.connect.medium.ui.auth.AuthViewModel
 import com.connect.medium.ui.auth.AuthViewModelFactory
+import com.connect.medium.utils.ThemePreferences
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlinx.coroutines.launch
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -45,6 +50,11 @@ class SettingsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Set navigation icon tint to adapt to theme
+        binding.toolbar.navigationIcon?.setTint(
+            ContextCompat.getColor(requireContext(), R.color.foreground)
+        )
+
         binding.toolbar.setNavigationOnClickListener {
             findNavController().popBackStack()
         }
@@ -53,8 +63,33 @@ class SettingsFragment : Fragment() {
             showLogoutConfirmation()
         }
 
-        // dark mode is static for now
-        binding.switchDarkMode.isEnabled = false
+        setupDarkMode()
+    }
+
+    private fun setupDarkMode() {
+        // enable the switch
+        binding.switchDarkMode.isEnabled = true
+
+        // load saved preference and set switch state
+        lifecycleScope.launch {
+            ThemePreferences.getDarkMode(requireContext())
+                .collect { isDark ->
+                    // remove listener before setting checked to avoid loop
+                    binding.switchDarkMode.setOnCheckedChangeListener(null)
+                    binding.switchDarkMode.isChecked = isDark
+
+                    // re-attach listener after setting value
+                    binding.switchDarkMode.setOnCheckedChangeListener { _, isChecked ->
+                        lifecycleScope.launch {
+                            ThemePreferences.setDarkMode(requireContext(), isChecked)
+                            AppCompatDelegate.setDefaultNightMode(
+                                if (isChecked) AppCompatDelegate.MODE_NIGHT_YES
+                                else AppCompatDelegate.MODE_NIGHT_NO
+                            )
+                        }
+                    }
+                }
+        }
     }
 
     private fun showLogoutConfirmation() {
