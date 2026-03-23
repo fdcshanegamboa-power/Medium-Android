@@ -71,6 +71,7 @@ class ProfileFragment : Fragment() {
 
         if (targetUid != viewModel.currentUid) {
             viewModel.observeIsFollowing(targetUid)
+            viewModel.checkIsFollowedBy(targetUid)
             binding.toolbar.setNavigationIcon(R.drawable.ic_back)
             binding.toolbar.navigationIcon?.setTint(
                 ContextCompat.getColor(requireContext(), R.color.foreground)
@@ -186,7 +187,48 @@ class ProfileFragment : Fragment() {
         }
 
         viewModel.isFollowing.observe(viewLifecycleOwner) { isFollowing ->
-            binding.btnFollow.text = if (isFollowing) "Unfollow" else "Follow"
+            updateFollowButton(isFollowing, viewModel.isFollowedBy.value ?: false)
+        }
+
+        viewModel.isFollowedBy.observe(viewLifecycleOwner) { isFollowedBy ->
+            updateFollowButton(viewModel.isFollowing.value ?: false, isFollowedBy)
+        }
+    }
+    private fun updateFollowButton(isFollowing: Boolean, isFollowedBy: Boolean) {
+        when {
+            isFollowing -> {
+                // current user follows target
+                binding.btnFollow.text = "Following"
+                binding.btnFollow.strokeWidth = 2
+                binding.btnFollow.setBackgroundColor(
+                    ContextCompat.getColor(requireContext(), android.R.color.transparent)
+                )
+                binding.btnFollow.setTextColor(
+                    ContextCompat.getColor(requireContext(), R.color.foreground)
+                )
+            }
+            isFollowedBy -> {
+                // target follows current user but not vice versa
+                binding.btnFollow.text = "Follow Back"
+                binding.btnFollow.strokeWidth = 0
+                binding.btnFollow.setBackgroundColor(
+                    ContextCompat.getColor(requireContext(), R.color.primary)
+                )
+                binding.btnFollow.setTextColor(
+                    ContextCompat.getColor(requireContext(), R.color.white)
+                )
+            }
+            else -> {
+                // no relationship
+                binding.btnFollow.text = "Follow"
+                binding.btnFollow.strokeWidth = 0
+                binding.btnFollow.setBackgroundColor(
+                    ContextCompat.getColor(requireContext(), R.color.primary)
+                )
+                binding.btnFollow.setTextColor(
+                    ContextCompat.getColor(requireContext(), R.color.white)
+                )
+            }
         }
     }
 

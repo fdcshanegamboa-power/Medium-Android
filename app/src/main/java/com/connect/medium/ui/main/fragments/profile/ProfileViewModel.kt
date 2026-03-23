@@ -32,6 +32,9 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
 
     val currentUid = authRepository.getCurrentUser()?.uid ?: ""
 
+    private val _isFollowedBy = MutableLiveData<Boolean>(false)
+    val isFollowedBy: LiveData<Boolean> = _isFollowedBy
+
     private val _userState = MutableLiveData<Resource<User>>()
     val userState: LiveData<Resource<User>> = _userState
 
@@ -75,6 +78,12 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch {
             userRepository.isFollowing(currentUid, targetUid)
                 .collect { _isFollowing.value = it }
+        }
+    }
+    fun checkIsFollowedBy(targetUid: String) {
+        viewModelScope.launch {
+            userRepository.observeIsFollowedBy(currentUid, targetUid)
+                .collect { _isFollowedBy.value = it }
         }
     }
 

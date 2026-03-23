@@ -72,10 +72,12 @@ class UserRepository(
 
     suspend fun followUser(currentUid: String, targetUid: String, fromUser: User): Resource<Unit> {
         return try {
-            followDao.insertFollow(FollowEntity(targetUid, currentUid))
+            followDao.insertFollow(FollowEntity(
+                followerUid = currentUid,
+                targetUid = targetUid
+            ))
             firestoreDataSource.followUser(currentUid, targetUid)
 
-            // send follow notification
             val notification = Notification(
                 notificationId = UUID.randomUUID().toString(),
                 toUid = targetUid,
@@ -87,6 +89,7 @@ class UserRepository(
                 createdAt = System.currentTimeMillis()
             )
             firestoreDataSource.sendNotification(notification)
+
             val targetToken = firestoreDataSource.getUserFcmToken(targetUid)
             if (!targetToken.isNullOrEmpty()) {
                 FCMSender.sendNotification(
@@ -105,13 +108,27 @@ class UserRepository(
     }
 
 
+    suspend fun isFollowedBy(currentUid: String, targetUid: String): Boolean {
+        return try{
+            firestoreDataSource.isFollowingUser(targetUid, currentUid)
+        }catch (e: Exception){
+            false
+        }
+    }
+    fun observeIsFollowedBy(currentUid: String, targetUid: String): Flow<Boolean> {
+        return firestoreDataSource.observeIsFollowedBy(currentUid, targetUid)
+    }
+
     suspend fun unfollowUser(currentUid: String, targetUid: String): Resource<Unit> {
         return try {
             followDao.deleteFollow(currentUid, targetUid)
             firestoreDataSource.unfollowUser(currentUid, targetUid)
             Resource.Success(Unit)
         } catch (e: Exception) {
-            followDao.insertFollow(FollowEntity(targetUid, currentUid))
+            followDao.insertFollow(FollowEntity(
+                followerUid = currentUid,
+                targetUid = targetUid
+            ))
             Resource.Error(e.message ?: "Failed to unfollow user")
         }
     }
@@ -124,10 +141,13 @@ class UserRepository(
             val following = firestoreDataSource.getFollowingList(currentUid)
             followDao.clearFollowing(currentUid)
             following.forEach { uid ->
-                followDao.insertFollow(FollowEntity(uid, currentUid))
+                followDao.insertFollow(FollowEntity(
+                    followerUid = currentUid,
+                    targetUid = uid
+                ))
             }
         } catch (e: Exception) {
-            // Handle sync error if needed
+            // fail silently
         }
     }
 

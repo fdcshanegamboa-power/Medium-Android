@@ -381,6 +381,23 @@ class FirestoreDataSource {
             }
         awaitClose { listener.remove() }
     }
+
+    fun observeIsFollowedBy(currentUid: String, targetUid: String): Flow<Boolean> = callbackFlow {
+        val listener = firestore.collection(Constants.COLLECTION_USERS)
+            .document(targetUid)
+            .collection(Constants.COLLECTION_FOLLOWING)
+            .document(currentUid)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    trySend(false)
+                    return@addSnapshotListener
+                }
+                trySend(snapshot?.exists() ?: false)
+            }
+        awaitClose { listener.remove() }
+    }
+
+
     suspend fun getFollowingList(currentUid: String): List<String> {
         return try {
             val snapshot = firestore.collection(Constants.COLLECTION_USERS)

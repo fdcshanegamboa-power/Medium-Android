@@ -19,8 +19,8 @@ interface FollowDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFollow(follow: FollowEntity)
 
-    @Query("DELETE FROM follows WHERE followerUid = :currentUid AND targetUid = :targetUid")
-    suspend fun deleteFollow(currentUid: String, targetUid: String)
+    @Query("DELETE FROM follows WHERE followerUid = :followerUid AND targetUid = :targetUid")
+    suspend fun deleteFollow(followerUid: String, targetUid: String)
 
     @Query("DELETE FROM follows WHERE followerUid = :currentUid")
     suspend fun clearFollowing(currentUid: String)
