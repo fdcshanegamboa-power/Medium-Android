@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.connect.medium.R
 import com.connect.medium.databinding.FragmentHomeBinding
 import com.connect.medium.ui.main.adapters.PostAdapter
-import com.connect.medium.ui.main.fragments.comments.CommentsBottomSheet
+import com.connect.medium.ui.main.fragments.comments.CommentsFragment
 import com.connect.medium.utils.Resource
 
 // TODO: Rename parameter arguments, choose names that match
@@ -75,8 +75,11 @@ class HomeFragment : Fragment() {
                 viewModel.toggleLike(post)
             },
             onCommentClick = { post ->
-                CommentsBottomSheet.newInstance(post.postId, post.authorUid)
-                    .show(parentFragmentManager, CommentsBottomSheet.TAG)
+                val action = HomeFragmentDirections.actionHomeToComments(
+                    postId = post.postId,
+                    postAuthorUid = post.authorUid
+                )
+                findNavController().navigate(action)
             },
             onProfileClick = { uid ->
                 if (uid == viewModel.currentUid) {

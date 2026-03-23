@@ -12,6 +12,11 @@
         <action
             android:id="@+id/action_home_to_profile"
             app:destination="@id/userProfileFragment" />
+        <action
+            android:id="@+id/action_home_to_comments"
+            app:destination="@id/commentsFragment"
+            app:enterAnim="@anim/slide_up"
+            app:popExitAnim="@anim/slide_down"/>
     </fragment>
 
     <fragment
@@ -28,6 +33,27 @@
         android:id="@+id/createPostFragment"
         android:name="com.connect.medium.ui.main.fragments.create.CreatePostFragment"
         android:label="Create" />
+
+    <fragment
+        android:id="@+id/commentsFragment"
+        android:name="com.connect.medium.ui.main.fragments.comments.CommentsFragment"
+        android:label="Comments">
+
+        <argument
+            android:name="postId"
+            app:argType="string"/>
+
+        <argument
+            android:name="postAuthorUid"
+            app:argType="string"/>
+
+        <action
+            android:id="@+id/action_comments_to_user_profile"
+            app:destination="@id/userProfileFragment"
+            app:enterAnim="@anim/slide_up"
+            app:exitAnim="@anim/slide_down"
+            app:popExitAnim="@anim/slide_down"/>
+    </fragment>
 
     <fragment
         android:id="@+id/notificationsFragment"

@@ -49,7 +49,7 @@ class MainActivity : AppCompatActivity() {
         navController.addOnDestinationChangedListener { _, destination, _ ->
             Log.d("NAV", "destination: ${destination.label}, id: ${destination.id}, userProfileId: ${R.id.userProfileFragment}")
             when (destination.id) {
-                R.id.createPostFragment, R.id.settingsFragment, R.id.userProfileFragment -> {
+                R.id.createPostFragment, R.id.settingsFragment, R.id.userProfileFragment, R.id.commentsFragment -> {
                     binding.fabCreate.hide()
                     binding.bottomNav.visibility = View.GONE
                 }
