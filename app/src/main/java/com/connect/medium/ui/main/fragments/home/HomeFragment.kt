@@ -79,8 +79,14 @@ class HomeFragment : Fragment() {
                     .show(parentFragmentManager, CommentsBottomSheet.TAG)
             },
             onProfileClick = { uid ->
-                val action = HomeFragmentDirections.actionHomeToProfile(uid)
-                findNavController().navigate(action)
+                if (uid == viewModel.currentUid) {
+                    requireActivity().findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
+                        R.id.bottom_nav
+                    ).selectedItemId = R.id.profileFragment
+                } else {
+                    val action = HomeFragmentDirections.actionHomeToProfile(uid)
+                    findNavController().navigate(action)
+                }
             }
         )
         binding.rvFeed.apply {

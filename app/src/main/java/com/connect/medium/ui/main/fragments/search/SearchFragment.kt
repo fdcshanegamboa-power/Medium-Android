@@ -53,9 +53,18 @@ class SearchFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
+
         userSearchAdapter = UserSearchAdapter { user ->
-            val action = SearchFragmentDirections.actionSearchToProfile(user.uid)
-            findNavController().navigate(action)
+            if (user.uid == viewModel.currentUid) {
+                // Own profile — switch to the Profile tab
+                requireActivity().findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
+                    R.id.bottom_nav
+                ).selectedItemId = R.id.profileFragment
+            } else {
+                // Other user — navigate to userProfileFragment
+                val action = SearchFragmentDirections.actionSearchToProfile(user.uid)
+                findNavController().navigate(action)
+            }
         }
 
         binding.rvSearchResults.apply {
@@ -63,7 +72,6 @@ class SearchFragment : Fragment() {
             adapter = userSearchAdapter
         }
     }
-
     private fun setupSearch() {
         binding.etSearch.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}

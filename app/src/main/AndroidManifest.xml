@@ -26,6 +26,7 @@
         android:theme="@style/Base.Theme.Connect">
         <activity
             android:name=".ui.auth.AuthActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -35,6 +36,7 @@
         </activity>
         <activity
             android:name=".ui.main.MainActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
             android:exported="false">
         </activity>
         <provider

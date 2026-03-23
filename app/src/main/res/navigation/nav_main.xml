@@ -11,7 +11,7 @@
 
         <action
             android:id="@+id/action_home_to_profile"
-            app:destination="@id/profileFragment" />
+            app:destination="@id/userProfileFragment" />
     </fragment>
 
     <fragment
@@ -21,7 +21,7 @@
 
         <action
             android:id="@+id/action_search_to_profile"
-            app:destination="@id/profileFragment" />
+            app:destination="@id/userProfileFragment" />
     </fragment>
 
     <fragment
@@ -36,7 +36,32 @@
 
         <action
             android:id="@+id/action_notifications_to_profile"
-            app:destination="@id/profileFragment"/>
+            app:destination="@id/userProfileFragment"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/userProfileFragment"
+        android:name="com.connect.medium.ui.main.fragments.profile.ProfileFragment"
+        android:label="Profile">
+
+        <argument
+            android:name="uid"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null"/>
+
+        <action
+            android:id="@+id/action_profile_to_settings"
+            app:destination="@id/settingsFragment"/>
+
+        <action
+            android:id="@+id/action_profile_to_edit_profile"
+            app:destination="@id/editProfileFragment"/>
+
+        <!-- allow stacking user profiles (e.g. tapping a commenter's name) -->
+        <action
+            android:id="@+id/action_user_profile_to_user_profile"
+            app:destination="@id/userProfileFragment"/>
     </fragment>
 
     <fragment

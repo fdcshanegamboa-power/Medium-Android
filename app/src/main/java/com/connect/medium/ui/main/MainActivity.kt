@@ -2,6 +2,7 @@ package com.connect.medium.ui.main
 
 import com.connect.medium.R
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
@@ -46,8 +47,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
+            Log.d("NAV", "destination: ${destination.label}, id: ${destination.id}, userProfileId: ${R.id.userProfileFragment}")
             when (destination.id) {
-                R.id.createPostFragment, R.id.settingsFragment -> {
+                R.id.createPostFragment, R.id.settingsFragment, R.id.userProfileFragment -> {
                     binding.fabCreate.hide()
                     binding.bottomNav.visibility = View.GONE
                 }

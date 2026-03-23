@@ -16,6 +16,8 @@ import kotlinx.coroutines.launch
 
 class SearchViewModel(application: Application) : AndroidViewModel(application) {
 
+    val currentUid: String = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: ""
+
     private val db = AppDatabase.getInstance(application)
     private val firestoreDataSource = FirestoreDataSource()
     private val userRepository = UserRepository(firestoreDataSource, db.userDao(), db.followDao())
