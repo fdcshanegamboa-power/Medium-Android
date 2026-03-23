@@ -9,7 +9,10 @@ import com.connect.medium.R
 import com.connect.medium.data.model.Comment
 import com.connect.medium.databinding.ItemCommentBinding
 
-class CommentAdapter : RecyclerView.Adapter<CommentAdapter.CommentViewHolder>() {
+class CommentAdapter(
+    private val onUsernameClick: (String) -> Unit,
+    private val onUserProfileClick: (Comment) -> Unit
+) : RecyclerView.Adapter<CommentAdapter.CommentViewHolder>() {
 
     private var comments = listOf<Comment>()
 
@@ -39,7 +42,7 @@ class CommentAdapter : RecyclerView.Adapter<CommentAdapter.CommentViewHolder>() 
             binding.tvUsername.text = comment.authorUsername
             binding.tvComment.text = comment.text
             binding.tvTimestamp.text = getRelativeTime(comment.createdAt)
-
+            binding.tvUsername.setOnClickListener { onUsernameClick(comment.authorUid) }
             if (comment.authorProfileImageUrl.isNotEmpty()) {
                 Glide.with(binding.root)
                     .load(comment.authorProfileImageUrl)
@@ -49,8 +52,8 @@ class CommentAdapter : RecyclerView.Adapter<CommentAdapter.CommentViewHolder>() 
             } else {
                 binding.ivProfileImage.setImageResource(R.drawable.ic_profile)
             }
+            binding.ivProfileImage.setOnClickListener { onUserProfileClick(comment) }
             Log.d("CommentAdapter", "Binding comment: ${comment.text} by ${comment.authorUsername} with profile url: ${comment.authorProfileImageUrl}")
-
         }
 
         private fun getRelativeTime(timestamp: Long): String {

@@ -7,7 +7,6 @@ plugins {
 
     id("com.google.gms.google-services")
     id("androidx.navigation.safeargs.kotlin")
-
 }
 
 android {
@@ -142,7 +141,4 @@ dependencies {
 
     //gridlayout
     implementation("androidx.gridlayout:gridlayout:1.1.0")
-
-
-
 }

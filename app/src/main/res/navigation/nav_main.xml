@@ -93,5 +93,4 @@
         android:id="@+id/editProfileFragment"
         android:name="com.connect.medium.ui.main.fragments.editprofile.EditProfileFragment"
         android:label="Edit Profile"/>
-
 </navigation>

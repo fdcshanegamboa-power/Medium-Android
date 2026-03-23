@@ -7,18 +7,16 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.connect.medium.R
 import com.connect.medium.databinding.FragmentCommentsBottomSheetBinding
 import com.connect.medium.ui.main.adapters.CommentAdapter
+import com.connect.medium.ui.main.fragments.home.HomeFragmentDirections
 import com.connect.medium.utils.Resource
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
 /**
  * A simple [Fragment] subclass.
@@ -91,7 +89,35 @@ class CommentsBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun setupRecyclerView() {
-        commentAdapter = CommentAdapter()
+        commentAdapter = CommentAdapter(
+            onUsernameClick = { uid ->
+                dismiss()
+                if (uid == viewModel.currentUid) {
+                    requireActivity().findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
+                        R.id.bottom_nav
+                    ).selectedItemId = R.id.profileFragment
+                } else {
+                    val action = HomeFragmentDirections.actionHomeToProfile(uid)
+                    requireActivity().supportFragmentManager
+                        .findFragmentById(R.id.main_nav_host)
+                        ?.findNavController()
+                        ?.navigate(action)
+                }
+            },
+            onUserProfileClick = { comment ->
+                if (comment.authorUid == viewModel.currentUid) {
+                    requireActivity().findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
+                        R.id.bottom_nav
+                    ).selectedItemId = R.id.profileFragment
+                } else {
+                    val action = HomeFragmentDirections.actionHomeToProfile(comment.authorUid)
+                    requireActivity().supportFragmentManager
+                        .findFragmentById(R.id.main_nav_host)
+                        ?.findNavController()
+                        ?.navigate(action)
+                }
+            }
+        )
         binding.rvComments.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = commentAdapter
