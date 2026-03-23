@@ -7,12 +7,14 @@ import com.google.gson.Gson
 // User
 fun User.toEntity(): UserEntity = UserEntity(
     uid, username, displayName, bio,
-    profileImageUrl, followerCount, followingCount, postCount, createdAt
+    profileImageUrl, fcmToken, followerCount,
+    followingCount, postCount, createdAt
 )
 
 fun UserEntity.toModel(): User = User(
     uid, username, displayName, bio,
-    profileImageUrl, followerCount, followingCount, postCount, createdAt
+    profileImageUrl, fcmToken, followerCount,
+    followingCount, postCount, createdAt
 )
 
 // Post

@@ -11,6 +11,7 @@ data class UserEntity(
     val displayName: String,
     val bio: String,
     val profileImageUrl: String,
+    val fcmToken: String = "",
     val followerCount: Int,
     val followingCount: Int,
     val postCount: Int,

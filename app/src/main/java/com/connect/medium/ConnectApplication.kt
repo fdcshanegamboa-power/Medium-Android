@@ -16,20 +16,13 @@ import kotlinx.coroutines.runBlocking
 
 class ConnectApplication : Application() {
 
+    companion object {
+        lateinit var instance: ConnectApplication
+            private set
+    }
     override fun onCreate() {
         super.onCreate()
-
-//        val scope = CoroutineScope(Dispatchers.Main)
-//        scope.launch {
-//            ThemePreferences.getDarkMode(this@ConnectApplication)
-//                .first()
-//                .let { isDark ->
-//                    AppCompatDelegate.setDefaultNightMode(
-//                        if (isDark) AppCompatDelegate.MODE_NIGHT_YES
-//                        else AppCompatDelegate.MODE_NIGHT_NO
-//                    )
-//                }
-//        }
+        instance = this
 
         val isDark = runBlocking(Dispatchers.IO) {
             ThemePreferences.getDarkMode(this@ConnectApplication).first()

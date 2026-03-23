@@ -7,6 +7,7 @@ import com.connect.medium.data.model.Notification
 import com.connect.medium.data.model.NotificationType
 import com.connect.medium.data.model.User
 import com.connect.medium.data.remote.FirestoreDataSource
+import com.connect.medium.utils.FCMSender
 import com.connect.medium.utils.Resource
 import com.connect.medium.utils.toEntity
 import com.connect.medium.utils.toModel
@@ -86,6 +87,15 @@ class UserRepository(
                 createdAt = System.currentTimeMillis()
             )
             firestoreDataSource.sendNotification(notification)
+            val targetToken = firestoreDataSource.getUserFcmToken(targetUid)
+            if (!targetToken.isNullOrEmpty()) {
+                FCMSender.sendNotification(
+                    targetToken = targetToken,
+                    title = fromUser.username,
+                    body = "started following you",
+                    type = "FOLLOW"
+                )
+            }
 
             Resource.Success(Unit)
         } catch (e: Exception) {

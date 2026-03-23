@@ -10,6 +10,7 @@ import com.connect.medium.data.model.User
 import com.connect.medium.data.remote.FirestoreDataSource
 import com.connect.medium.data.repository.AuthRepository
 import com.connect.medium.data.repository.UserRepository
+import com.connect.medium.utils.FCMHelper
 import com.connect.medium.utils.Resource
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.launch
@@ -32,6 +33,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             val result = authRepository.login(email, password)
             if (result is Resource.Success) {
                 userRepository.syncFollowingList(result.data.uid)
+                FCMHelper.saveTokenToFirestore(result.data.uid)
             }
             _authState.value = result
         }
@@ -57,6 +59,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     _authState.value = Resource.Error(createResult.message)
                     return@launch
                 }
+                FCMHelper.saveTokenToFirestore(result.data.uid)
             }
 
             _authState.value = result

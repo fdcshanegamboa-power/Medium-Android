@@ -14,6 +14,18 @@ android {
     compileSdk {
         version = release(36)
     }
+    packaging {
+        resources {
+            excludes += setOf(
+                "META-INF/INDEX.LIST",
+                "META-INF/DEPENDENCIES",
+                "META-INF/LICENSE",
+                "META-INF/LICENSE.txt",
+                "META-INF/NOTICE",
+                "META-INF/NOTICE.txt"
+            )
+        }
+    }
 
     defaultConfig {
         applicationId = "com.connect.medium"
@@ -55,6 +67,13 @@ android {
     buildFeatures {
         viewBinding = true
         buildConfig = true
+    }
+    sourceSets {
+        getByName("main") {
+            assets {
+                srcDirs("src/main/assets")
+            }
+        }
     }
 }
 
@@ -141,4 +160,9 @@ dependencies {
 
     //gridlayout
     implementation("androidx.gridlayout:gridlayout:1.1.0")
+
+    //FCM
+    implementation("com.google.firebase:firebase-messaging")
+    implementation("com.google.auth:google-auth-library-oauth2-http:1.19.0")
+
 }

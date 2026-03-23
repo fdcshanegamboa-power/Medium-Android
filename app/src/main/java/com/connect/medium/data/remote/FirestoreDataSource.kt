@@ -35,6 +35,18 @@ class FirestoreDataSource {
             null
         }
     }
+    suspend fun getUserFcmToken(uid: String): String? {
+
+        return try{
+            firestore.collection(Constants.COLLECTION_USERS)
+                .document(uid)
+                .get()
+                .await()
+                .getString("fcmToken")
+        } catch(e: Exception) {
+            null
+        }
+    }
 
     suspend fun updateUser(uid: String, fields: Map<String, Any>) {
         try {

@@ -7,6 +7,7 @@ import com.connect.medium.data.model.NotificationType
 import com.connect.medium.data.model.Post
 import com.connect.medium.data.model.User
 import com.connect.medium.data.remote.FirestoreDataSource
+import com.connect.medium.utils.FCMSender
 import com.connect.medium.utils.Resource
 import com.connect.medium.utils.toEntity
 import com.connect.medium.utils.toModel
@@ -73,6 +74,16 @@ class PostRepository(
                     createdAt = System.currentTimeMillis()
                 )
                 firestoreDataSource.sendNotification(notification)
+
+                val targetToken = firestoreDataSource.getUserFcmToken(postAuthorUid)
+                if (!targetToken.isNullOrEmpty()) {
+                    FCMSender.sendNotification(
+                        targetToken = targetToken,
+                        title = fromUser.username,
+                        body = "liked your post",
+                        type = "LIKE"
+                    )
+                }
             }
 
             Resource.Success(Unit)
@@ -111,6 +122,16 @@ class PostRepository(
                     createdAt = System.currentTimeMillis()
                 )
                 firestoreDataSource.sendNotification(notification)
+
+                val targetToken = firestoreDataSource.getUserFcmToken(postAuthorUid)
+                if (!targetToken.isNullOrEmpty()) {
+                    FCMSender.sendNotification(
+                        targetToken = targetToken,
+                        title = fromUser.username,
+                        body = "commented: ${comment.text}",
+                        type = "COMMENT"
+                    )
+                }
             }
 
             Resource.Success(Unit)

@@ -6,6 +6,7 @@ data class User(
     val displayName: String = "",
     val bio: String = "",
     val profileImageUrl: String = "",
+    val fcmToken: String = "",
     val followerCount: Int = 0,
     val followingCount: Int = 0,
     val postCount: Int = 0,

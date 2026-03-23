@@ -16,7 +16,7 @@ import com.connect.medium.data.local.entity.*
         NotificationEntity::class,
         FollowEntity::class
     ],
-    version = 8,
+    version = 9,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
