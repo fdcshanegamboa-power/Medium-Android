@@ -19,11 +19,17 @@ object FCMSender {
         targetToken: String,
         title: String,
         body: String,
-        type: String
+        type: String,
+        postId: String = "",
+        fromUid: String = ""
     ) {
         withContext(Dispatchers.IO) {
             try {
-                val accessToken = getAccessToken() ?: return@withContext
+                val accessToken = getAccessToken()
+                if (accessToken == null) {
+                    Log.e("FCMSender", "Access token is null — aborting")
+                    return@withContext
+                }
 
                 val json = JSONObject().apply {
                     put("message", JSONObject().apply {
@@ -34,6 +40,11 @@ object FCMSender {
                         })
                         put("data", JSONObject().apply {
                             put("type", type)
+                            put("postId", postId)       // add this
+                            put("fromUid", fromUid)     // add this
+                        })
+                        put("android", JSONObject().apply {
+                            put("priority", "high")
                         })
                     })
                 }
@@ -43,17 +54,26 @@ object FCMSender {
                 conn.apply {
                     requestMethod = "POST"
                     setRequestProperty("Authorization", "Bearer $accessToken")
-                    setRequestProperty("Content-Type", "application/json")
+                    setRequestProperty("Content-Type", "application/json; UTF-8")
                     doOutput = true
-                    outputStream.write(json.toString().toByteArray())
+                    connectTimeout = 10000
+                    readTimeout = 10000
+                    outputStream.write(json.toString().toByteArray(Charsets.UTF_8))
                 }
 
                 val responseCode = conn.responseCode
-                Log.d("FCMSender", "Response: $responseCode")
+                val responseBody = if (responseCode == 200) {
+                    conn.inputStream.bufferedReader().readText()
+                } else {
+                    conn.errorStream?.bufferedReader()?.readText() ?: "no error body"
+                }
+
+                Log.d("FCMSender", "Response code: $responseCode")
+                Log.d("FCMSender", "Response body: $responseBody")
                 conn.disconnect()
 
             } catch (e: Exception) {
-                Log.e("FCMSender", "Failed to send notification: ${e.message}")
+                Log.e("FCMSender", "Exception: ${e.message}", e)
             }
         }
     }

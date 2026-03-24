@@ -1,0 +1,15 @@
+package com.connect.medium.ui.main.fragments.viewpost
+
+import android.app.Application
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+
+class ViewPostViewModelFactory(private val application: Application) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(ViewPostViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return ViewPostViewModel(application) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
+}

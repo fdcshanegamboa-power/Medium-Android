@@ -63,6 +63,9 @@
         <action
             android:id="@+id/action_notifications_to_profile"
             app:destination="@id/userProfileFragment"/>
+        <action
+            android:id="@+id/action_notifications_to_view_post"
+            app:destination="@id/viewPostFragment"/>
     </fragment>
 
     <fragment
@@ -119,4 +122,19 @@
         android:id="@+id/editProfileFragment"
         android:name="com.connect.medium.ui.main.fragments.editprofile.EditProfileFragment"
         android:label="Edit Profile"/>
+
+    <fragment
+        android:id="@+id/viewPostFragment"
+        android:name="com.connect.medium.ui.main.fragments.viewpost.ViewPostFragment"
+        android:label="Post">
+
+        <argument
+            android:name="postId"
+            app:argType="string"/>
+
+        <action
+            android:id="@+id/action_view_post_to_profile"
+            app:destination="@id/userProfileFragment"/>
+
+    </fragment>
 </navigation>

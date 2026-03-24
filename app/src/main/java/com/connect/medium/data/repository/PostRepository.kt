@@ -81,7 +81,9 @@ class PostRepository(
                         targetToken = targetToken,
                         title = fromUser.username,
                         body = "liked your post",
-                        type = "LIKE"
+                        type = "LIKE",
+                        postId = postId,
+                        fromUid = uid
                     )
                 }
             }
@@ -129,7 +131,9 @@ class PostRepository(
                         targetToken = targetToken,
                         title = fromUser.username,
                         body = "commented: ${comment.text}",
-                        type = "COMMENT"
+                        type = "COMMENT",
+                        postId = comment.postId,
+                        fromUid = comment.authorUid
                     )
                 }
             }

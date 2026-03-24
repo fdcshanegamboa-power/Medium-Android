@@ -255,7 +255,9 @@
             android:layout_height="match_parent"
             android:visibility="gone"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"/>
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:clipToPadding="false"
+            android:paddingBottom="88dp"/>
 
         <LinearLayout
             android:id="@+id/empty_state"

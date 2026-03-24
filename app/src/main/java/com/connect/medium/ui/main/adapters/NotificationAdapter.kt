@@ -3,6 +3,8 @@ package com.connect.medium.ui.main.adapters
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContentProviderCompat.requireContext
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.connect.medium.R
@@ -42,10 +44,6 @@ class NotificationAdapter(
             binding.tvUsername.text = notification.fromUsername
             binding.tvTimestamp.text = getRelativeTime(notification.createdAt)
 
-            // unread indicator
-            binding.viewUnread.visibility =
-                if (!notification.read) View.VISIBLE else View.INVISIBLE
-
             // notification message based on type
             binding.tvMessage.text = when (notification.type) {
                 NotificationType.LIKE -> "liked your post"
@@ -60,6 +58,9 @@ class NotificationAdapter(
                     NotificationType.COMMENT -> R.drawable.ic_comment
                     NotificationType.FOLLOW -> R.drawable.ic_profile
                 }
+            )
+            binding.ivNotificationIcon.drawable?.setTint(
+                ContextCompat.getColor(binding.root.context, R.color.foreground)
             )
 
             Glide.with(binding.root)

@@ -396,6 +396,18 @@ class FirestoreDataSource {
             }
         awaitClose { listener.remove() }
     }
+    fun observePost(postId: String): Flow<Post?> = callbackFlow {
+        val listener = firestore.collection(Constants.COLLECTION_POSTS)
+            .document(postId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    trySend(null)
+                    return@addSnapshotListener
+                }
+                trySend(snapshot?.toObject(Post::class.java))
+            }
+        awaitClose { listener.remove() }
+    }
 
 
     suspend fun getFollowingList(currentUid: String): List<String> {

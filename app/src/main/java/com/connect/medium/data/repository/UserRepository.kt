@@ -96,7 +96,8 @@ class UserRepository(
                     targetToken = targetToken,
                     title = fromUser.username,
                     body = "started following you",
-                    type = "FOLLOW"
+                    type = "FOLLOW",
+                    fromUid = currentUid
                 )
             }
 

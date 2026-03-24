@@ -39,24 +39,26 @@ class FCMService : FirebaseMessagingService() {
 
     override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
-
         val title = message.notification?.title ?: message.data["title"] ?: return
         val body = message.notification?.body ?: message.data["body"] ?: return
         val type = message.data["type"] ?: ""
-
-        showNotification(title, body, type)
+        val postId = message.data["postId"] ?: ""
+        val fromUid = message.data["fromUid"] ?: ""
+        showNotification(title, body, type, postId, fromUid)
     }
 
-    private fun showNotification(title: String, body: String, type: String) {
+    private fun showNotification(title: String, body: String, type: String, postId: String, fromUid: String) {
         val channelId = "connect_notifications"
 
         val intent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             putExtra("notification_type", type)
+            putExtra("notification_post_id", postId)
+            putExtra("notification_from_uid", fromUid)
         }
 
         val pendingIntent = PendingIntent.getActivity(
-            this, 0, intent,
+            this, System.currentTimeMillis().toInt(), intent,
             PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -70,17 +72,6 @@ class FCMService : FirebaseMessagingService() {
             .build()
 
         val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-
-        // create channel for Android 8+
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                channelId,
-                "Notifications",
-                NotificationManager.IMPORTANCE_HIGH
-            )
-            manager.createNotificationChannel(channel)
-        }
-
         manager.notify(System.currentTimeMillis().toInt(), notification)
     }
 }

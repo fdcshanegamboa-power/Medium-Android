@@ -1,6 +1,7 @@
 package com.connect.medium.ui.main.fragments.notifications
 
 import android.os.Bundle
+import androidx.core.content.ContextCompat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -57,7 +58,11 @@ class NotificationsFragment : Fragment() {
                     findNavController().navigate(action)
                 }
                 NotificationType.LIKE, NotificationType.COMMENT -> {
-                    // TODO: navigate to post detail
+                    if (notification.postId.isNotEmpty()) {
+                        val action = NotificationsFragmentDirections
+                            .actionNotificationsToViewPost(notification.postId)
+                        findNavController().navigate(action)
+                    }
                 }
             }
         }

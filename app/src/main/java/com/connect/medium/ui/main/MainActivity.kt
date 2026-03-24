@@ -1,6 +1,7 @@
 package com.connect.medium.ui.main
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import com.connect.medium.R
@@ -54,7 +55,7 @@ class MainActivity : AppCompatActivity() {
         navController.addOnDestinationChangedListener { _, destination, _ ->
             Log.d("NAV", "destination: ${destination.label}, id: ${destination.id}, userProfileId: ${R.id.userProfileFragment}")
             when (destination.id) {
-                R.id.createPostFragment, R.id.settingsFragment, R.id.userProfileFragment, R.id.commentsFragment -> {
+                R.id.createPostFragment, R.id.settingsFragment, R.id.userProfileFragment, R.id.commentsFragment, R.id.viewPostFragment-> {
                     binding.fabCreate.hide()
                     binding.bottomNav.visibility = View.GONE
                 }
@@ -66,6 +67,40 @@ class MainActivity : AppCompatActivity() {
         }
         requestNotificationPermission()
         setupNotificationBadge()
+        handleNotificationIntent(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleNotificationIntent(intent)
+    }
+
+    private fun handleNotificationIntent(intent: Intent) {
+        val type = intent.getStringExtra("notification_type") ?: return
+        val postId = intent.getStringExtra("notification_post_id") ?: ""
+        val fromUid = intent.getStringExtra("notification_from_uid") ?: ""
+
+        // wait for nav controller to be ready
+        binding.root.post {
+            when (type) {
+                "FOLLOW" -> {
+                    if (fromUid.isNotEmpty()) {
+                        navController.navigate(
+                            R.id.userProfileFragment,
+                            Bundle().apply { putString("uid", fromUid) }
+                        )
+                    }
+                }
+                "LIKE", "COMMENT" -> {
+                    if (postId.isNotEmpty()) {
+                        navController.navigate(
+                            R.id.viewPostFragment,
+                            Bundle().apply { putString("postId", postId) }
+                        )
+                    }
+                }
+            }
+        }
     }
     private fun setupNotificationBadge(){
         notificationsViewModel = ViewModelProvider(
