@@ -38,8 +38,6 @@
     <!-- States -->
     <color name="error">#ED4956</color>
     <color name="success">#4CAF50</color>
-
-    <!-- Bottom Nav -->
     <!-- Bottom Nav -->
     <color name="nav_background">#FFFFFF</color>
     <color name="nav_item_active">#6D28D9</color>
