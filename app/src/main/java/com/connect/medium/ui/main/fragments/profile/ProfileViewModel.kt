@@ -65,10 +65,9 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     fun loadUserPosts(uid: String) {
         _postsState.value = Resource.Loading
         viewModelScope.launch {
-            val minDelay = launch { delay(800) }
+            delay(300)
             postRepository.observeUserPosts(uid)
                 .collect { posts ->
-                    minDelay.join()
                     _postsState.value = Resource.Success(posts)
                 }
         }

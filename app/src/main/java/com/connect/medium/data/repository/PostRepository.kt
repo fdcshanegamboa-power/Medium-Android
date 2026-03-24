@@ -24,7 +24,6 @@ class PostRepository(
     fun observeFeedPosts(): Flow<List<Post>> {
         return firestoreDataSource.observeFeedPosts()
             .onEach { posts ->
-                // cache to Room
                 postDao.insertPosts(posts.map { it.toEntity() })
             }
     }

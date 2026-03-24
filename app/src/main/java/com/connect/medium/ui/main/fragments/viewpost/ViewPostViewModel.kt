@@ -15,6 +15,7 @@ import com.connect.medium.data.repository.AuthRepository
 import com.connect.medium.data.repository.PostRepository
 import com.connect.medium.data.repository.UserRepository
 import com.connect.medium.utils.Resource
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -56,6 +57,7 @@ class ViewPostViewModel(application: Application) : AndroidViewModel(application
     fun loadPost(postId: String) {
         _postState.value = Resource.Loading
         viewModelScope.launch {
+            val minDelay = launch { delay(800) }
             firestoreDataSource.observePost(postId)
                 .collect { post ->
                     if (post != null) {

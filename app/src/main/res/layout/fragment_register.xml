@@ -13,14 +13,17 @@
 
         <ImageView
             android:id="@+id/iv_logo"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
             android:src="@drawable/ic_logo_raw"
             android:contentDescription="App Logo"
+            android:scaleType="fitCenter"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="48dp"/>
 
+        <!-- Title -->
         <TextView
             android:id="@+id/tv_title"
             android:layout_width="wrap_content"
@@ -28,10 +31,13 @@
             android:text="Create Account"
             android:textSize="28sp"
             android:textStyle="bold"
+            android:textAlignment="center"
             app:layout_constraintTop_toBottomOf="@id/iv_logo"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="16dp"/>
 
+        <!-- Subtitle -->
         <TextView
             android:id="@+id/tv_subtitle"
             android:layout_width="wrap_content"
@@ -39,8 +45,10 @@
             android:text="Sign up to get started"
             android:textSize="14sp"
             android:textColor="@color/gray"
+            android:textAlignment="center"
             app:layout_constraintTop_toBottomOf="@id/tv_title"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="8dp"/>
 
         <com.google.android.material.textfield.TextInputLayout

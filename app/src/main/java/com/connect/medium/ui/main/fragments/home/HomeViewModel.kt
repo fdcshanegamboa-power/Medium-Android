@@ -62,9 +62,14 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
         _postsState.value = Resource.Loading
         viewModelScope.launch {
-            delay(800)
+            val minDelay = launch { delay(800) }
             try {
                 val (posts, lastDoc) = postRepository.getFeedPostsPaginated(limit = 5)
+                postRepository.observeFeedPosts()
+                    .collect { posts ->
+                        minDelay.join()
+                        _postsState.value = Resource.Success(posts)
+                    }
                 allPosts.addAll(posts)
                 lastDocument = lastDoc
                 hasMorePosts = posts.size >= 5
