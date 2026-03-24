@@ -2,14 +2,10 @@ package com.connect.medium.ui.auth
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import com.connect.medium.R
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.connect.medium.databinding.ActivityAuthBinding
-import com.connect.medium.databinding.ActivityMainBinding
 import com.connect.medium.ui.main.MainActivity
 
 class AuthActivity : AppCompatActivity() {
@@ -20,6 +16,7 @@ class AuthActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
         binding = ActivityAuthBinding.inflate(layoutInflater)
         setContentView(binding.root)

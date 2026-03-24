@@ -32,5 +32,4 @@
         <item name="android:textColorPrimary">@color/foreground</item>
         <item name="titleTextColor">@color/foreground</item>
     </style>
-
 </resources>

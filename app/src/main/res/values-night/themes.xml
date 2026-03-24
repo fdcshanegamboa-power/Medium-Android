@@ -16,4 +16,12 @@
         <item name="android:fontFamily">@font/instagram_sans</item>
         <item name="fontFamily">@font/instagram_sans</item>
     </style>
+
+    <style name="Theme.Connect.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_logo</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/background</item>
+        <item name="postSplashScreenTheme">@style/Theme.Connect</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
 </resources>

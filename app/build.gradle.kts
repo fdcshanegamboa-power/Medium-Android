@@ -167,4 +167,7 @@ dependencies {
     implementation("com.google.firebase:firebase-messaging")
     implementation("com.google.auth:google-auth-library-oauth2-http:1.19.0")
 
+    //Splash Screen dependency
+    implementation("androidx.core:core-splashscreen:1.0.0")
+
 }

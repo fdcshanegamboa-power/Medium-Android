@@ -4,7 +4,19 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="12dp">
+    android:paddingHorizontal="16dp"
+    android:paddingVertical="10dp">
+
+    <!-- Logo -->
+    <ImageView
+        android:id="@+id/iv_logo"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:src="@drawable/ic_logo_raw"
+        android:contentDescription="App Logo"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
     <!-- App Name -->
     <TextView
@@ -12,12 +24,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Medium"
-        android:textSize="34sp"
+        android:textSize="22sp"
         android:textStyle="bold"
         android:textColor="@color/foreground"
         android:fontFamily="@font/shopping"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        android:layout_marginStart="10dp"
+        app:layout_constraintStart_toEndOf="@id/iv_logo"
+        app:layout_constraintTop_toTopOf="@id/iv_logo"
+        app:layout_constraintBottom_toBottomOf="@id/iv_logo"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
