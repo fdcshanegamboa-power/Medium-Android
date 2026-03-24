@@ -10,9 +10,11 @@ import androidx.fragment.app.viewModels
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.connect.medium.R
 import com.connect.medium.databinding.FragmentHomeBinding
 import com.connect.medium.ui.main.adapters.PostAdapter
+import com.connect.medium.ui.main.adapters.PostMediaAdapter
 import com.connect.medium.ui.main.fragments.comments.CommentsFragment
 import com.connect.medium.utils.Resource
 
@@ -31,7 +33,7 @@ private const val ARG_PARAM2 = "param2"
 class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: HomeViewModel by viewModels{
+    private val viewModel: HomeViewModel by viewModels {
         HomeViewModelFactory(requireActivity().application)
     }
     private lateinit var postAdapter: PostAdapter
@@ -71,9 +73,7 @@ class HomeFragment : Fragment() {
 
     private fun setupRecyclerView() {
         postAdapter = PostAdapter(
-            onLikeClick = { post ->
-                viewModel.toggleLike(post)
-            },
+            onLikeClick = { post -> viewModel.toggleLike(post) },
             onCommentClick = { post ->
                 val action = HomeFragmentDirections.actionHomeToComments(
                     postId = post.postId,
@@ -92,15 +92,59 @@ class HomeFragment : Fragment() {
                 }
             }
         )
+
+        val layoutManager = LinearLayoutManager(requireContext())
         binding.rvFeed.apply {
-            layoutManager = LinearLayoutManager(requireContext())
+            this.layoutManager = layoutManager
             adapter = postAdapter
+            // pause videos when scrolling
+            addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                    super.onScrollStateChanged(recyclerView, newState)
+                    if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
+                        pauseVisibleVideos(recyclerView)
+                    }
+                }
+
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    super.onScrolled(recyclerView, dx, dy)
+                    // pagination trigger
+                    val visibleItemCount = layoutManager.childCount
+                    val totalItemCount = layoutManager.itemCount
+                    val firstVisibleItem = layoutManager.findFirstVisibleItemPosition()
+
+                    if (!recyclerView.canScrollVertically(1) ||
+                        (visibleItemCount + firstVisibleItem >= totalItemCount - 2)
+                    ) {
+                        viewModel.loadMorePosts()
+                    }
+                }
+            })
         }
     }
 
-    private fun observeViewModel(){
-        viewModel.postsState.observe(viewLifecycleOwner){ resource ->
-            when(resource){
+    private fun pauseVisibleVideos(recyclerView: RecyclerView) {
+        val layoutManager = recyclerView.layoutManager as? LinearLayoutManager ?: return
+        val first = layoutManager.findFirstVisibleItemPosition()
+        val last = layoutManager.findLastVisibleItemPosition()
+        for (i in first..last) {
+            val holder = recyclerView.findViewHolderForAdapterPosition(i)
+            if (holder is PostAdapter.PostViewHolder) {
+                val vp = holder.binding.viewPagerMedia
+                val rv = vp.getChildAt(0) as? RecyclerView ?: continue
+                for (j in 0 until rv.childCount) {
+                    val mediaHolder = rv.getChildViewHolder(rv.getChildAt(j))
+                    if (mediaHolder is PostMediaAdapter.VideoViewHolder) {
+                        mediaHolder.pause()
+                    }
+                }
+            }
+        }
+    }
+
+    private fun observeViewModel() {
+        viewModel.postsState.observe(viewLifecycleOwner) { resource ->
+            when (resource) {
                 is Resource.Loading -> {
                     showShimmer(true)
                     binding.swipeRefresh.isRefreshing = false
@@ -115,8 +159,6 @@ class HomeFragment : Fragment() {
                         binding.emptyState.visibility = View.GONE
                         postAdapter.submitList(resource.data)
                         viewModel.checkLikedPosts(resource.data.map { it.postId })
-
-                        // Wait for the RecyclerView to actually lay out before hiding shimmer
                         binding.rvFeed.post {
                             showShimmer(false)
                             binding.rvFeed.visibility = View.VISIBLE
@@ -125,28 +167,37 @@ class HomeFragment : Fragment() {
                 }
                 is Resource.Error -> {
                     binding.swipeRefresh.isRefreshing = false
-
                     showShimmer(false)
                     binding.rvFeed.visibility = View.GONE
                     binding.emptyState.visibility = View.VISIBLE
-
                     context?.let {
                         Toast.makeText(it, resource.message, Toast.LENGTH_SHORT).show()
                     }
                 }
             }
         }
+
+        viewModel.paginationState.observe(viewLifecycleOwner) { resource ->
+            when (resource) {
+                is Resource.Loading -> postAdapter.showLoadingFooter(true)
+                is Resource.Success -> postAdapter.showLoadingFooter(false)
+                is Resource.Error -> {
+                    postAdapter.showLoadingFooter(false)
+                    Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
         viewModel.likedPostIds.observe(viewLifecycleOwner) { likedIds ->
             postAdapter.setLikedPosts(likedIds)
         }
-        viewModel.likeState.observe(viewLifecycleOwner){ resource ->
+
+        viewModel.likeState.observe(viewLifecycleOwner) { resource ->
             if (resource is Resource.Error) {
                 Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
             }
         }
     }
-
-
 
     override fun onDestroyView() {
         binding.rvFeed.adapter = null

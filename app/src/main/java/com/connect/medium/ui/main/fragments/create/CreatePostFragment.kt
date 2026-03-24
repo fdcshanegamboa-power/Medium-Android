@@ -2,6 +2,7 @@ package com.connect.medium.ui.main.fragments.create
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.PorterDuff
 import android.net.Uri
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -137,6 +138,8 @@ class CreatePostFragment : Fragment() {
         setupMediaPreview()
         setupClickListeners()
         observeViewModel()
+
+
     }
 
     private fun setupMediaPreview() {
@@ -159,18 +162,34 @@ class CreatePostFragment : Fragment() {
         binding.btnClose.setOnClickListener {
             findNavController().popBackStack()
         }
+        binding.btnClose.drawable?.setColorFilter(
+            ContextCompat.getColor(binding.root.context, R.color.foreground),
+            PorterDuff.Mode.SRC_IN
+        )
 
         binding.btnPickMedia.setOnClickListener {
             pickMediaLauncher.launch(arrayOf("image/*", "video/*"))
         }
+        binding.btnPickMedia.setColorFilter(
+            ContextCompat.getColor(binding.root.context, R.color.foreground),
+            PorterDuff.Mode.SRC_IN
+        )
 
         binding.btnCamera.setOnClickListener {
             checkCameraPermissionAndOpen()
         }
+        binding.btnCamera.setColorFilter(
+            ContextCompat.getColor(binding.root.context, R.color.foreground),
+            PorterDuff.Mode.SRC_IN
+        )
 
         binding.btnExpand.setOnClickListener {
             toggleToolbar()
         }
+        binding.btnExpand.setColorFilter(
+            ContextCompat.getColor(binding.root.context, R.color.foreground),
+            PorterDuff.Mode.SRC_IN
+        )
 
         binding.btnPost.setOnClickListener {
             val caption = binding.etCaption.text.toString().trim()

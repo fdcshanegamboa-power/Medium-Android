@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.media3.common.util.UnstableApi
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.connect.medium.R
@@ -23,19 +24,31 @@ class PostAdapter(
 
     private var posts = listOf<Post>()
     private var likedPosts = mutableSetOf<String>()
+    private var showLoading = false
+
 
     init {
         setHasStableIds(false)
     }
+    fun showLoadingFooter(show: Boolean) {
+        val wasShowing = showLoading
+        showLoading = show
+        if (wasShowing && !show) {
+            notifyItemRemoved(posts.size + 1)
+        } else if (!wasShowing && show) {
+            notifyItemInserted(posts.size + 1)
+        }
+    }
 
     fun submitList(newPosts: List<Post>) {
+        val diffResult = DiffUtil.calculateDiff(PostDiffCallback(posts, newPosts))
         posts = newPosts
-        notifyDataSetChanged()
+        diffResult.dispatchUpdatesTo(this)
     }
 
     fun setLikedPosts(liked: Set<String>) {
         likedPosts = liked.toMutableSet()
-        notifyDataSetChanged()
+        notifyItemRangeChanged(1, posts.size)
     }
 
     fun updateLike(postId: String, isLiked: Boolean) {
@@ -44,16 +57,25 @@ class PostAdapter(
         if (index != -1) notifyItemChanged(index)
     }
 
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        return if (viewType == VIEW_TYPE_HEADER) {
-            val view = LayoutInflater.from(parent.context)
-                .inflate(R.layout.item_feed_header, parent, false)
-            HeaderViewHolder(view)
-        } else {
-            val binding = ItemPostBinding.inflate(
-                LayoutInflater.from(parent.context), parent, false
-            )
-            PostViewHolder(binding)
+        return when (viewType) {
+            VIEW_TYPE_HEADER -> {
+                val view = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_feed_header, parent, false)
+                HeaderViewHolder(view)
+            }
+            VIEW_TYPE_FOOTER -> {
+                val view = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_loading_footer, parent, false)
+                FooterViewHolder(view)
+            }
+            else -> {
+                val binding = ItemPostBinding.inflate(
+                    LayoutInflater.from(parent.context), parent, false
+                )
+                PostViewHolder(binding)
+            }
         }
     }
 
@@ -64,14 +86,19 @@ class PostAdapter(
                 holder.bind(post)
             }
             is HeaderViewHolder -> {}
+            is FooterViewHolder -> {}
         }
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (position == 0) VIEW_TYPE_HEADER else VIEW_TYPE_POST
+        return when {
+            position == 0 -> VIEW_TYPE_HEADER
+            showLoading && position == posts.size + 1 -> VIEW_TYPE_FOOTER
+            else -> VIEW_TYPE_POST
+        }
     }
 
-    override fun getItemCount() = posts.size + 1
+    override fun getItemCount() = posts.size + 1 + if (showLoading) 1 else 0
 
     // release all players when post is recycled
     override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
@@ -103,7 +130,21 @@ class PostAdapter(
         recyclerView.recycledViewPool.setMaxRecycledViews(1, 20) // Limit IMAGE holders
     }
 
-
+    override fun onViewDetachedFromWindow(holder: RecyclerView.ViewHolder) {
+        super.onViewDetachedFromWindow(holder)
+        if (holder is PostViewHolder) {
+            // pause all videos in this post's ViewPager when it leaves screen
+            val rv = holder.binding.viewPagerMedia.getChildAt(0) as? RecyclerView
+            rv?.let {
+                for (i in 0 until it.childCount) {
+                    val mediaHolder = it.getChildViewHolder(it.getChildAt(i))
+                    if (mediaHolder is PostMediaAdapter.VideoViewHolder) {
+                        mediaHolder.pause()
+                    }
+                }
+            }
+        }
+    }
 
     inner class PostViewHolder(
         val binding: ItemPostBinding  // changed to val so onViewRecycled can access it
@@ -253,7 +294,21 @@ class PostAdapter(
     companion object {
         private const val VIEW_TYPE_HEADER = 0
         private const val VIEW_TYPE_POST = 1
+        private const val VIEW_TYPE_FOOTER = 2
+
     }
 }
 
 class HeaderViewHolder(view: View) : RecyclerView.ViewHolder(view)
+class FooterViewHolder(view: View) : RecyclerView.ViewHolder(view)
+class PostDiffCallback(
+    private val oldList: List<Post>,
+    private val newList: List<Post>
+) : DiffUtil.Callback() {
+    override fun getOldListSize() = oldList.size
+    override fun getNewListSize() = newList.size
+    override fun areItemsTheSame(oldPos: Int, newPos: Int) =
+        oldList[oldPos].postId == newList[newPos].postId
+    override fun areContentsTheSame(oldPos: Int, newPos: Int) =
+        oldList[oldPos] == newList[newPos]
+}

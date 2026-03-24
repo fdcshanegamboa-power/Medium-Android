@@ -29,8 +29,11 @@ class PostRepository(
             }
     }
 
-    fun getCachedPosts(): Flow<List<Post>> {
-        return postDao.getAllPosts().map { list -> list.map { it.toModel() } }
+    suspend fun getFeedPostsPaginated(
+        limit: Long = 5,
+        lastDocument: com.google.firebase.firestore.DocumentSnapshot? = null
+    ): Pair<List<Post>, com.google.firebase.firestore.DocumentSnapshot?> {
+        return firestoreDataSource.getFeedPostsPaginated(limit, lastDocument)
     }
 
     fun observeUserPosts(uid: String): Flow<List<Post>> {

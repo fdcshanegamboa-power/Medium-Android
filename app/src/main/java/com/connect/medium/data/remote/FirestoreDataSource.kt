@@ -409,6 +409,32 @@ class FirestoreDataSource {
         awaitClose { listener.remove() }
     }
 
+    suspend fun getFeedPostsPaginated(
+        limit: Long = 5,
+        lastDocument: com.google.firebase.firestore.DocumentSnapshot? = null
+    ): Pair<List<Post>, com.google.firebase.firestore.DocumentSnapshot?> {
+        return try {
+            var query = firestore.collection(Constants.COLLECTION_POSTS)
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .limit(limit)
+
+            // if we have a last document, start after it
+            if (lastDocument != null) {
+                query = query.startAfter(lastDocument)
+            }
+
+            val snapshot = query.get().await()
+            val posts = snapshot.toObjects(Post::class.java)
+            val lastDoc = if (snapshot.documents.isNotEmpty()) {
+                snapshot.documents.last()
+            } else null
+
+            Pair(posts, lastDoc)
+        } catch (e: Exception) {
+            Pair(emptyList(), null)
+        }
+    }
+
 
     suspend fun getFollowingList(currentUid: String): List<String> {
         return try {

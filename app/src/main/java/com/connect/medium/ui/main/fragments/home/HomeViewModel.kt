@@ -13,6 +13,7 @@ import com.connect.medium.data.repository.AuthRepository
 import com.connect.medium.data.repository.PostRepository
 import com.connect.medium.data.repository.UserRepository
 import com.connect.medium.utils.Resource
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
@@ -29,14 +30,23 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val _postsState = MutableLiveData<Resource<List<Post>>>()
     val postsState: LiveData<Resource<List<Post>>> = _postsState
 
+    private val _paginationState = MutableLiveData<Resource<Unit>>()
+    val paginationState: LiveData<Resource<Unit>> = _paginationState
+
     private val _likeState = MutableLiveData<Resource<Unit>>()
     val likeState: LiveData<Resource<Unit>> = _likeState
 
     private val _likedPostIds = MutableLiveData<Set<String>>()
     val likedPostIds: LiveData<Set<String>> = _likedPostIds
 
-    // tracks optimistic like state locally
     private val localLikedPosts = mutableSetOf<String>()
+
+    // pagination state
+    private val allPosts = mutableListOf<Post>()
+    private var lastDocument: com.google.firebase.firestore.DocumentSnapshot? = null
+    private var isLoadingMore = false
+    var hasMorePosts = true
+        private set
 
     init {
         loadFeed()
@@ -44,17 +54,57 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun loadFeed() {
+        // reset pagination
+        allPosts.clear()
+        lastDocument = null
+        hasMorePosts = true
+        isLoadingMore = false
+
         _postsState.value = Resource.Loading
         viewModelScope.launch {
-            val minDelay = launch { kotlinx.coroutines.delay(800) }
-
-            postRepository.observeFeedPosts()
-                .collect { posts ->
-                    minDelay.join() // wait for at least 800ms before showing data
-                    _postsState.value = Resource.Success(posts)
-                }
+            delay(800)
+            try {
+                val (posts, lastDoc) = postRepository.getFeedPostsPaginated(limit = 5)
+                allPosts.addAll(posts)
+                lastDocument = lastDoc
+                hasMorePosts = posts.size >= 5
+                _postsState.value = Resource.Success(allPosts.toList())
+            } catch (e: Exception) {
+                _postsState.value = Resource.Error(e.message ?: "Failed to load feed")
+            }
         }
     }
+
+    fun loadMorePosts() {
+        if (isLoadingMore || !hasMorePosts) return
+
+        isLoadingMore = true
+        _paginationState.value = Resource.Loading
+
+        viewModelScope.launch {
+            try {
+                val (posts, lastDoc) = postRepository.getFeedPostsPaginated(
+                    limit = 5,
+                    lastDocument = lastDocument
+                )
+                if (posts.isEmpty()) {
+                    hasMorePosts = false
+                    _paginationState.value = Resource.Success(Unit)
+                    return@launch
+                }
+                allPosts.addAll(posts)
+                lastDocument = lastDoc
+                hasMorePosts = posts.size >= 5
+                _postsState.value = Resource.Success(allPosts.toList())
+                _paginationState.value = Resource.Success(Unit)
+            } catch (e: Exception) {
+                _paginationState.value = Resource.Error(e.message ?: "Failed to load more")
+            } finally {
+                isLoadingMore = false
+            }
+        }
+    }
+
     private fun loadCurrentUser() {
         viewModelScope.launch {
             userRepository.observeUser(currentUid)
@@ -65,15 +115,11 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     fun toggleLike(post: Post) {
         viewModelScope.launch {
             val isLiked = localLikedPosts.contains(post.postId)
-
-            // optimistic update
             if (isLiked) localLikedPosts.remove(post.postId)
             else localLikedPosts.add(post.postId)
             _likedPostIds.value = localLikedPosts.toSet()
 
-            // need current user for notification
             val currentUser = _currentUser.value
-
             val result = if (isLiked) {
                 postRepository.unlikePost(post.postId, currentUid)
             } else {
@@ -84,7 +130,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
 
-            // rollback if failed
             if (result is Resource.Error) {
                 if (isLiked) localLikedPosts.add(post.postId)
                 else localLikedPosts.remove(post.postId)
