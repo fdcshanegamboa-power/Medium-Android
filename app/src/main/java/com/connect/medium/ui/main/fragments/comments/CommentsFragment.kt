@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -14,6 +15,7 @@ import com.connect.medium.R
 import com.connect.medium.databinding.FragmentCommentsBinding
 import com.connect.medium.ui.main.adapters.CommentAdapter
 import com.connect.medium.utils.Resource
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class CommentsFragment : Fragment() {
 
@@ -43,16 +45,20 @@ class CommentsFragment : Fragment() {
         observeViewModel()
 
         viewModel.loadComments(args.postId)
+        binding.toolbar.navigationIcon?.setTint(
+            ContextCompat.getColor(requireContext(), R.color.foreground)
+        )
+        binding.toolbar.setNavigationOnClickListener{
+            findNavController().popBackStack()
+        }
     }
 
     private fun setupRecyclerView() {
         commentAdapter = CommentAdapter(
             onUsernameClick = { uid ->
                 if (uid == viewModel.currentUid) {
-                    findNavController().popBackStack()
-                    requireActivity().findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
-                        R.id.bottom_nav
-                    ).selectedItemId = R.id.profileFragment
+                    findNavController().navigate(R.id.action_comments_to_own_profile)
+
                 } else {
                     val action = CommentsFragmentDirections.actionCommentsToUserProfile(uid)
                     findNavController().navigate(action)
@@ -60,10 +66,7 @@ class CommentsFragment : Fragment() {
             },
             onUserProfileClick = { comment ->
                 if (comment.authorUid == viewModel.currentUid) {
-                    findNavController().popBackStack()
-                    requireActivity().findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
-                        R.id.bottom_nav
-                    ).selectedItemId = R.id.profileFragment
+                    findNavController().navigate(R.id.action_comments_to_own_profile)
                 } else {
                     val action = CommentsFragmentDirections.actionCommentsToUserProfile(comment.authorUid)
                     findNavController().navigate(action)

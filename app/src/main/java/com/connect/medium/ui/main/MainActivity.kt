@@ -35,15 +35,6 @@ class MainActivity : AppCompatActivity() {
             .findFragmentById(R.id.main_nav_host) as NavHostFragment
         navController = navHostFragment.navController
 
-        val appBarConfig = AppBarConfiguration(
-            setOf(
-                R.id.homeFragment,
-                R.id.searchFragment,
-                R.id.notificationsFragment,
-                R.id.profileFragment
-            )
-        )
-
         binding.bottomNav.setupWithNavController(navController)
         binding.bottomNav.menu.findItem(R.id.placeholder)?.apply {
             isEnabled = false
@@ -53,11 +44,30 @@ class MainActivity : AppCompatActivity() {
         }
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
-            Log.d("NAV", "destination: ${destination.label}, id: ${destination.id}, userProfileId: ${R.id.userProfileFragment}")
             when (destination.id) {
-                R.id.createPostFragment, R.id.settingsFragment, R.id.userProfileFragment, R.id.commentsFragment, R.id.viewPostFragment-> {
+                R.id.createPostFragment, R.id.settingsFragment, R.id.userProfileFragment, R.id.viewPostFragment-> {
                     binding.fabCreate.hide()
                     binding.bottomNav.visibility = View.GONE
+                }
+                R.id.profileFragment -> {
+                    // check if it was navigated to from back stack or as root tab
+                    val isRootTab = navController.previousBackStackEntry?.destination?.id == null ||
+                            navController.previousBackStackEntry?.destination?.id == R.id.homeFragment ||
+                            navController.previousBackStackEntry?.destination?.id == R.id.notificationsFragment ||
+                            navController.previousBackStackEntry?.destination?.id == R.id.searchFragment
+                    if (isRootTab) {
+                        binding.fabCreate.show()
+                        binding.bottomNav.visibility = View.VISIBLE
+                    } else {
+                        // came from comments or somewhere else — hide nav, treat as stacked
+                        binding.fabCreate.hide()
+                        binding.bottomNav.visibility = View.GONE
+                    }
+                }
+                R.id.commentsFragment -> {
+                    binding.fabCreate.hide()
+                    binding.bottomNav.visibility = View.VISIBLE
+                    binding.bottomNav.menu.findItem(R.id.homeFragment)?.isChecked = true
                 }
                 else -> {
                     binding.fabCreate.show()

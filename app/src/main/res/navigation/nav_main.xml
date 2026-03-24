@@ -53,6 +53,10 @@
             app:enterAnim="@anim/slide_up"
             app:exitAnim="@anim/slide_down"
             app:popExitAnim="@anim/slide_down"/>
+
+        <action
+            android:id="@+id/action_comments_to_own_profile"
+            app:destination="@id/profileFragment"/>
     </fragment>
 
     <fragment
@@ -135,6 +139,5 @@
         <action
             android:id="@+id/action_view_post_to_profile"
             app:destination="@id/userProfileFragment"/>
-
     </fragment>
 </navigation>

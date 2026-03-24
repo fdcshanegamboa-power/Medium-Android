@@ -70,6 +70,13 @@ class ViewPostFragment : Fragment() {
         binding.toolbar.navigationIcon?.setTint(
             ContextCompat.getColor(requireContext(), R.color.foreground)
         )
+        binding.postContent.tvCommentCount.visibility = View.GONE
+        binding.postContent.tvUsername.setOnClickListener {
+            currentPost?.let { post ->
+                val action = ViewPostFragmentDirections.actionViewPostToProfile(post.authorUid)
+                findNavController().navigate(action)
+            }
+        }
     }
 
     private fun setupCommentList() {
@@ -81,7 +88,7 @@ class ViewPostFragment : Fragment() {
                         R.id.bottom_nav
                     ).selectedItemId = R.id.profileFragment
                 } else {
-                    val action = CommentsFragmentDirections.actionCommentsToUserProfile(uid)
+                    val action = ViewPostFragmentDirections.actionViewPostToProfile(uid)
                     findNavController().navigate(action)
                 }
             },
@@ -92,7 +99,7 @@ class ViewPostFragment : Fragment() {
                         R.id.bottom_nav
                     ).selectedItemId = R.id.profileFragment
                 } else {
-                    val action = CommentsFragmentDirections.actionCommentsToUserProfile(comment.authorUid)
+                    val action = ViewPostFragmentDirections.actionViewPostToProfile(comment.authorUid)
                     findNavController().navigate(action)
                 }
             }
