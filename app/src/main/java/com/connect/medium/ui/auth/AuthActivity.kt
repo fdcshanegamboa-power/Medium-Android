@@ -2,8 +2,10 @@ package com.connect.medium.ui.auth
 
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.material3.MaterialTheme
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.connect.medium.databinding.ActivityAuthBinding
 import com.connect.medium.ui.main.MainActivity
@@ -16,18 +18,24 @@ class AuthActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val splashScreen = installSplashScreen()
+        installSplashScreen()
         super.onCreate(savedInstanceState)
-        binding = ActivityAuthBinding.inflate(layoutInflater)
-        setContentView(binding.root)
 
         if(viewModel.isLoggedIn()){
             navigateToMain()
         }
+
+        setContent {
+            MaterialTheme {
+                AuthNavGraph(viewModel = viewModel, onAuthSuccess = {
+                    navigateToMain()
+                })
+            }
+        }
     }
     private fun navigateToMain() {
-        val intent = Intent(this, MainActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        startActivity(intent)
+        startActivity(Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        })
     }
 }
